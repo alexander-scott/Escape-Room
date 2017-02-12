@@ -12,6 +12,8 @@ public class CameraController : MonoBehaviour
     public Text infoText;
     public Button resumeButton;
 
+    public float scanFrequency = 0.3f;
+
     // Device cameras
     WebCamDevice frontCameraDevice;
     WebCamDevice backCameraDevice;
@@ -171,7 +173,7 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    // The coroutine which will scan the video feed every 0.3 secs
+    // The coroutine which will scan the video feed every 'scanFrequency' secs
     private IEnumerator Scanning()
     {
         while (currentState == CurrentState.Scanning)
@@ -187,7 +189,7 @@ public class CameraController : MonoBehaviour
                 PauseCameraFeed();
             }
 
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(scanFrequency);
         }
     }
 }
