@@ -3,19 +3,20 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;// Required when using Event data.
 
-public class ScanButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+namespace Assets.Prototype_Assets
 {
-    public CameraController cameraController;
-
-    //Do this when the mouse is clicked over the selectable object this script is attached to.
-    public void OnPointerDown(PointerEventData eventData)
+    public class ScanButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
-        cameraController.StartScanning();
-    }
+        public CameraController cameraController;
 
-    //Do this when the mouse is clicked over the selectable object this script is attached to.
-    public void OnPointerUp(PointerEventData eventData)
-    {
-        cameraController.EndScanning();
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            cameraController.StartScanning();
+        }
+
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            cameraController.EndScanning();
+        }
     }
 }

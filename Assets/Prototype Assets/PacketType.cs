@@ -7,6 +7,6 @@ namespace Assets.Prototype_Assets
 {
     public enum PacketType
     {
-        MOVE, WEBCAM
+        MOVE, WEBCAM, QRCODE
     };
 }

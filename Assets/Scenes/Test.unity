@@ -261,13 +261,11 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 196945433}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 984ca2e456de37d49b355a2e1334dfd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UseWebcamTexture:
-  - {fileID: 196945434}
 --- !u!114 &196945439
 MonoBehaviour:
   m_ObjectHideFlags: 0
