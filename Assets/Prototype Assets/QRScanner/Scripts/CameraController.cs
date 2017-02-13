@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections;
 using NetworkLib;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 namespace Assets.Prototype_Assets
 {
@@ -14,7 +15,8 @@ namespace Assets.Prototype_Assets
         public AspectRatioFitter imageFitter;
         public GameObject scanButton;
         public Text infoText;
-        public Button resumeButton;
+        public Sprite resumeSprite;
+        public Sprite scanSprite;
 
         public float scanFrequency = 0.3f;
 
@@ -111,11 +113,13 @@ namespace Assets.Prototype_Assets
         {
             infoText.text = result;
             currentState = CurrentScanState.ResultFound;
-            resumeButton.gameObject.SetActive(true);
+            scanButton.GetComponent<Image>().sprite = resumeSprite;
 
+            /*********************************************************/
             //Packet p = new Packet((int)PacketType.QRCODE, result);
             //p.generalData.Add(result);
             //Client.SendPacket(p, LibProtocolType.UDP);
+            /*********************************************************/
 
             PauseCameraFeed();
         }
@@ -163,14 +167,22 @@ namespace Assets.Prototype_Assets
             if (!activeCameraTexture.isPlaying)
             {
                 activeCameraTexture.Play();
-                infoText.text = "Awaiting input...";
-                resumeButton.gameObject.SetActive(false);
+                infoText.text = "";
             }
         }
 
         // Starts the coroutine that scans the video feed
         public void StartScanning()
         {
+            // If we a result has been found then don't immediately go back to scanning.
+            if (currentState == CurrentScanState.ResultFound)
+            {
+                scanButton.GetComponent<Image>().sprite = scanSprite;
+                currentState = CurrentScanState.Idle;
+                ResumeCameraFeed();
+                return;
+            }
+
             currentState = CurrentScanState.Scanning;
 
             StartCoroutine(Scanning());
@@ -182,7 +194,7 @@ namespace Assets.Prototype_Assets
 
             StartCoroutine(RotateIcon(0.3f));
             
-            infoText.text = "Scanning...";
+            infoText.text = "";
         }
 
         // Stops scanning the video feed
@@ -195,7 +207,7 @@ namespace Assets.Prototype_Assets
                 StopCoroutine(Scanning());
                 StartCoroutine(ShrinkIcon(0.3f));
 
-                infoText.text = "Nothing found";
+                //infoText.text = "Nothing found";
             }
         }
 
@@ -318,6 +330,11 @@ namespace Assets.Prototype_Assets
                     yield return new WaitForSeconds(smoothness);
                 }
             }
+        }
+
+        public void ReturnToHome()
+        {
+            SceneManager.LoadScene("Menu");
         }
     }
 }

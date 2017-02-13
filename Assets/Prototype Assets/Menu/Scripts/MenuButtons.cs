@@ -6,15 +6,21 @@ using UnityEngine.SceneManagement;
 
 public class MenuButtons : MonoBehaviour
 {
-
     public Button subButton;
     public Button controlsButton;
-    //public Button subControls;
+    public Button qrScannerButton;
+
+    public InputField ipAddressText;
+    public Dropdown dropDownList;
 
     private void Start()
     {
         subButton.onClick.AddListener(SubButtonClicked);
         controlsButton.onClick.AddListener(ControlsButtonClicked);
+        qrScannerButton.onClick.AddListener(QRButtonClicked);
+
+        ipAddressText.text = GlobalVariables.ipAddress;
+        dropDownList.value = GlobalVariables.playerNumber;
     }
 
     private void SubButtonClicked()
@@ -25,5 +31,20 @@ public class MenuButtons : MonoBehaviour
     private void ControlsButtonClicked()
     {
         SceneManager.LoadScene("Controls");
+    }
+
+    private void QRButtonClicked()
+    {
+        SceneManager.LoadScene("QRScanner");
+    }
+
+    public void IPAddressChanged(string ipaddress)
+    {
+        GlobalVariables.ipAddress = ipaddress;
+    }
+
+    public void PlayerSelectChanged(int val)
+    {
+        GlobalVariables.playerNumber = val;
     }
 }

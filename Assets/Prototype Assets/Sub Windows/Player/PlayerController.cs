@@ -20,12 +20,28 @@ public class PlayerController : NetworkBehaviour
     //the sub...
     private GameObject mSubmarine;
 
+    //underwater stuff, needs extracting out
+    public int underwaterLevel = 7;
+
+    //default fog settings from scene
+    private bool defaultFog;
+    private Color defaultFogColour; 
+    private float defaultFogDensity;
+    private Material defaultSkybox; 
+    private Material noSkybox;
+
     public void Start()
     {
+        defaultFog = RenderSettings.fog;
+        defaultFogColour = RenderSettings.fogColor;
+        defaultFogDensity = RenderSettings.fogDensity;
+        defaultSkybox = RenderSettings.skybox;
+
+
+        this.cam.backgroundColor = new Color(0, 0.4f, 0.7f, 1);
+
         //find sub in scene
         mSubmarine = GameObject.FindGameObjectWithTag("Submarine");
-
-        RenderSettings.fog = true;
 
         //init to North Camera
         this.transform.position = new Vector3(mSubmarine.transform.position.x + 5, mSubmarine.transform.position.y, mSubmarine.transform.position.z);
@@ -40,48 +56,88 @@ public class PlayerController : NetworkBehaviour
 
     public void Update()
     {
-        
+        if (this.transform.position.y < underwaterLevel)
+        {
+            //underwater
+            RenderSettings.fog = true;
+            RenderSettings.fogColor = new Color(0, 0.4f, 0.7f, 0.6f);
+            RenderSettings.fogDensity = 0.04f;
+            RenderSettings.skybox = noSkybox;
+        }
+        else
+        {
+            //above water
+            RenderSettings.fog = defaultFog;
+            RenderSettings.fogColor = defaultFogColour;
+            RenderSettings.fogDensity = defaultFogDensity;
+            RenderSettings.skybox = defaultSkybox;
+        }
 
         if (!isLocalPlayer)
         {
             return;
         }
 
-        //let's try this
-        //mSubmarine = GameObject.FindGameObjectWithTag("Submarine");
-
-
-        Quaternion tempRotation = mSubmarine.transform.rotation;
-
         switch (activeCamera)
         {
-            
             //North facing camera
             case 0:
                 this.transform.position = new Vector3(mSubmarine.transform.position.x + kWindowOffset, mSubmarine.transform.position.y, mSubmarine.transform.position.z);
-                tempRotation *= Quaternion.Euler(0, 180, 0);
-                this.transform.rotation = tempRotation;
+                this.transform.rotation = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
+
+
+                //this.transform.rotation = Quaternion.LookRotation(new Vector3(mSubmarine.transform.position.x + kWindowOffset, mSubmarine.transform.position.y, mSubmarine.transform.position.z));
+
+
+
+                //tempRotation *= Quaternion.Euler(0, 180, 0);
+                //this.transform.rotation = tempRotation;
                 debugText = "Camera North";
                 break;
             //East facing camera
             case 1:
                 this.transform.position = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z - kWindowOffset);
-                tempRotation *= Quaternion.Euler(0, 270, 0);
-                this.transform.rotation = tempRotation;
+                this.transform.rotation = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y - 90.0f, mSubmarine.transform.rotation.z);
+
+                //should be perp to front facing vector +90deg (clockwise)
+                //take cross product of the directional vector (pos) and the vector straight up (mast)
+                //Vector3 posPerpVector = Vector3.Cross(mSubmarine.transform.position, mSubmarine.transform.up);
+                //posPerpVector.Scale(new Vector3(-1.0f, -1.0f, -1.0f));
+                //this.transform.position = new Vector3(posPerpVector.x, posPerpVector.y, posPerpVector.z += kWindowOffset);
+                //this.transform.rotation = Quaternion.AngleAxis(90, Vector3.up);
+
+                //this.transform.right = mSubmarine.transform.right;
+                //this.transform.rotation = Quaternion.LookRotation(this.transform.position);
+
+                //tempRotation *= Quaternion.Euler(0, 270, 0);
+                //this.transform.rotation = tempRotation;
                 debugText = "Camera East";
                 break;
             //South facing camera
             case 2:
-                this.transform.position = new Vector3(mSubmarine.transform.position.x - (2 * kWindowOffset), mSubmarine.transform.position.y, mSubmarine.transform.position.z);
-                tempRotation *= Quaternion.Euler(0, 0, 0);
-                this.transform.rotation = tempRotation;
+
+                Vector3 oppositeVector = mSubmarine.transform.position;
+                this.transform.position = new Vector3(mSubmarine.transform.position.x - (2*kWindowOffset), mSubmarine.transform.position.y, mSubmarine.transform.position.z);
+                this.transform.rotation = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y, mSubmarine.transform.rotation.z);
+
+                //this.transform.position = new Vector3(oppositeVector.x + (2 * kWindowOffset), oppositeVector.y, oppositeVector.z);
+                //this.transform.rotation = Quaternion.AngleAxis(180, Vector3.up);
+                //this.transform.rotation = Quaternion.LookRotation(this.transform.position);
+
+
                 debugText = "Camera South";
                 break;
             //West facing camera
             case 3:
                 this.transform.position = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z + kWindowOffset);
-                tempRotation *= Quaternion.Euler(0, 90, 0);
-                this.transform.rotation = tempRotation;
+                this.transform.rotation = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 90.0f, mSubmarine.transform.rotation.z);
+
+                //Vector3 negPerpVector = Vector3.Cross(mSubmarine.transform.position, mSubmarine.transform.up) * -1;
+                //this.transform.position = new Vector3(negPerpVector.x, negPerpVector.y, negPerpVector.z += kWindowOffset);
+                //this.transform.rotation = Quaternion.AngleAxis(90, Vector3.up);
+                //this.transform.rotation = Quaternion.LookRotation(this.transform.position);
+                //should be perp to front facing vector -90deg (anticlockwise)
+
                 debugText = "Camera West";
                 break;
         }
