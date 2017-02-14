@@ -6,7 +6,6 @@ using NetworkLib;
 
 namespace Assets.Prototype_Assets
 {
-
     public class Buttons : MonoBehaviour
     { 
         public Button forwardButton;

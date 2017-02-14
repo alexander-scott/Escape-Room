@@ -19,6 +19,9 @@ public class MenuButtons : MonoBehaviour
         controlsButton.onClick.AddListener(ControlsButtonClicked);
         qrScannerButton.onClick.AddListener(QRButtonClicked);
 
+        ipAddressText.onValueChanged.AddListener(IPAddressChanged);
+        dropDownList.onValueChanged.AddListener(PlayerSelectChanged);
+
         ipAddressText.text = GlobalVariables.ipAddress;
         dropDownList.value = GlobalVariables.playerNumber;
     }
@@ -41,10 +44,12 @@ public class MenuButtons : MonoBehaviour
     public void IPAddressChanged(string ipaddress)
     {
         GlobalVariables.ipAddress = ipaddress;
+        Debug.Log("IPAddress is now set to " + ipaddress);
     }
 
     public void PlayerSelectChanged(int val)
     {
         GlobalVariables.playerNumber = val;
+        Debug.Log("This players number is now set to " + val);
     }
 }
