@@ -14,7 +14,8 @@ namespace Assets.Prototype_Assets
 
         void Start()
         {
-            //NetworkLib.Client.connect(GlobalVariables.ipAddress, LibProtocolType.UDP);
+            NetworkLib.Client.connect(GlobalVariables.ipAddress, LibProtocolType.UDP);
+
             moveText.text = ((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString();
 
             switch ((GlobalVariables.Direction)GlobalVariables.playerNumber)
@@ -37,13 +38,20 @@ namespace Assets.Prototype_Assets
             }
         }
 
-        public void StartMoving()
+		void OnApplicationQuit()
+		{
+			NetworkLib.Client.stop();
+		}
+
+
+		public void StartMoving()
         {
             moving = true;
 
             Packet p = new Packet((int)PacketType.MOVE, ((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString());
             p.generalData.Add(((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString());
-            Client.SendPacket(p, LibProtocolType.UDP);
+			Debug.Log(p.generalData[0]);
+            Client.SendPacket(p);
         }
 
         public void EndMoving()
@@ -52,7 +60,7 @@ namespace Assets.Prototype_Assets
 
             Packet p = new Packet((int)PacketType.ENDMOVE, ((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString());
             p.generalData.Add(((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString());
-            Client.SendPacket(p, LibProtocolType.UDP);
+            Client.SendPacket(p);
         }
 
         public void ReturnToMainMenu()

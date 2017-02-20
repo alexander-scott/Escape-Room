@@ -21,7 +21,7 @@ public class PlayerController : NetworkBehaviour
     private GameObject mSubmarine;
 
     //underwater stuff, needs extracting out
-    public int underwaterLevel = 7;
+    public float underwaterLevel = 6.4f;
 
     //default fog settings from scene
     private bool defaultFog;
