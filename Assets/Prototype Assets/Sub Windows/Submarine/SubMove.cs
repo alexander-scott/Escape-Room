@@ -2,12 +2,12 @@
 using System.Collections;
 using UnityEngine.Networking;
 using NetworkLib;
+using System;
 
 namespace Assets.Prototype_Assets
 {
 	public class SubMove : NetworkBehaviour
 	{
-
 		bool forward = true;
 		float kTranslateMultiplier = 3.0f;
 		float kRotateMultiplier = 150.0f;
@@ -15,11 +15,9 @@ namespace Assets.Prototype_Assets
 		float y = 0.0f;
 		float z = 0.0f;
 
-
 		// Use this for initialization
 		void Start()
 		{
-
 			//transform.position = new Vector3(0.0f, 0.0f, 0.0f);
 			//transform.Rotate(0.0f, 0.0f, 0.0f);
 
@@ -28,18 +26,18 @@ namespace Assets.Prototype_Assets
 			{
 				//Starts a UDP Server from the Network Lib
 				NetworkLib.Server.start(LibProtocolType.UDP);
+
 				//Create an Observer to listen for the Packet Type '1' is used for movement commands
 				//Calls the method 'MoveSub' when recieved to handle the packet.
 				Server.ServerPacketObserver.AddObserver((int)PacketType.MOVE, MoveSub);
-			}
-
+                Server.ServerPacketObserver.AddObserver((int)PacketType.ENDMOVE, EndMoveSub);
+            }
 		}
 
-		void OnApplicationQuit()
+        void OnApplicationQuit()
 		{
 			NetworkLib.Server.stop();
 		}
-
 
 		void Update()
 		{
@@ -67,7 +65,7 @@ namespace Assets.Prototype_Assets
 			transform.Translate(z, y, 0);
 		}
 
-		void MoveSub(Packet p)
+		private void MoveSub(Packet p)
 		{
 			//If the data in the packet contains the forward command, move the Sub along
 			//the relevant axis
@@ -86,8 +84,11 @@ namespace Assets.Prototype_Assets
 			{
 				z = z - 0.1f;
 			}
-
-
 		}
-	}
+
+        private void EndMoveSub(Packet p)
+        {
+            
+        }
+    }
 }

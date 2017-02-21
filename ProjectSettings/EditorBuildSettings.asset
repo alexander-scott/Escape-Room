@@ -15,3 +15,5 @@ EditorBuildSettings:
     path: Assets/Scenes/Debug/WebcamDebug.unity
   - enabled: 1
     path: Assets/Scenes/QRScanner.unity
+  - enabled: 1
+    path: Assets/Scenes/Sonar.unity

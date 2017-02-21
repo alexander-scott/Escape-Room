@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Submarine
+  - enemy
   layers:
   - Default
   - TransparentFX

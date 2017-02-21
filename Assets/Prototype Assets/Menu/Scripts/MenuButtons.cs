@@ -9,6 +9,7 @@ public class MenuButtons : MonoBehaviour
     public Button subButton;
     public Button controlsButton;
     public Button qrScannerButton;
+    public Button sonarButton;
 
     public InputField ipAddressText;
     public Dropdown dropDownList;
@@ -18,6 +19,7 @@ public class MenuButtons : MonoBehaviour
         subButton.onClick.AddListener(SubButtonClicked);
         controlsButton.onClick.AddListener(ControlsButtonClicked);
         qrScannerButton.onClick.AddListener(QRButtonClicked);
+        sonarButton.onClick.AddListener(SonarButtonClicked);
 
         ipAddressText.onValueChanged.AddListener(IPAddressChanged);
         dropDownList.onValueChanged.AddListener(PlayerSelectChanged);
@@ -39,6 +41,11 @@ public class MenuButtons : MonoBehaviour
     private void QRButtonClicked()
     {
         SceneManager.LoadScene("QRScanner");
+    }
+
+    private void SonarButtonClicked()
+    {
+        SceneManager.LoadScene("Sonar");
     }
 
     public void IPAddressChanged(string ipaddress)

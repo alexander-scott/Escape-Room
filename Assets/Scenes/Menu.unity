@@ -1724,6 +1724,7 @@ MonoBehaviour:
   subButton: {fileID: 353185192}
   controlsButton: {fileID: 2129475263}
   qrScannerButton: {fileID: 1209444834}
+  sonarButton: {fileID: 1879374136}
   ipAddressText: {fileID: 2136431257}
   dropDownList: {fileID: 1840894007}
 --- !u!1 &1702029969
