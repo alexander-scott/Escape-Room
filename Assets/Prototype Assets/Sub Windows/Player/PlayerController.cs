@@ -78,7 +78,7 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        switch (activeCamera)
+        switch (GlobalVariables.playerNumber)
         {
             //North facing camera
             case 0:
@@ -142,7 +142,7 @@ public class PlayerController : NetworkBehaviour
                 break;
         }
 
-        SwitchCamera();
+        //SwitchCamera();
 
     }
 

@@ -8,27 +8,30 @@ namespace Assets.Prototype_Assets
 {
 	public class SubMove : NetworkBehaviour
 	{
-		bool forward = true;
-		float kTranslateMultiplier = 3.0f;
-		float kRotateMultiplier = 150.0f;
-		float x = 0.0f;
-		float y = 0.0f;
-		float z = 0.0f;
+        public float maximumMovementSpeed = 5f;
+        public float maximumRotationSpeed = 5f;
+        public float divingSpeed = 3f;
 
-		// Use this for initialization
+        public float movementAcceleration = 0.5f;
+        public float rotationAcceleration = 2f;
+
+        private float currentMovementSpeed = 0f;
+        private float currentRotationSpeed = 0f;
+
+        private bool forward = false;
+        private bool backward = false;
+        private bool left = false;
+        private bool right = false;
+
 		void Start()
 		{
-			//transform.position = new Vector3(0.0f, 0.0f, 0.0f);
-			//transform.Rotate(0.0f, 0.0f, 0.0f);
-
-			//Starts a server to listen for movement commands if this client is the host
+			// Starts a server to listen for movement commands if this client is the host
 			if (isServer)
 			{
-				//Starts a UDP Server from the Network Lib
+				// Starts a UDP Server from the Network Lib
 				NetworkLib.Server.start(LibProtocolType.UDP);
 
-				//Create an Observer to listen for the Packet Type '1' is used for movement commands
-				//Calls the method 'MoveSub' when recieved to handle the packet.
+				// Create an Observer to listen for the various pack types that are used to move the sub
 				Server.ServerPacketObserver.AddObserver((int)PacketType.MOVE, MoveSub);
                 Server.ServerPacketObserver.AddObserver((int)PacketType.ENDMOVE, EndMoveSub);
             }
@@ -41,54 +44,121 @@ namespace Assets.Prototype_Assets
 
 		void Update()
 		{
-			//transform.Translate(x, y, z);
-
-			//debugging movement with cameras
-			//var x = Input.GetAxis("Horizontal") * Time.deltaTime * kRotateMultiplier;
-			//var z = Input.GetAxis("Vertical") * Time.deltaTime * kTranslateMultiplier;
-
-
 			float y = 0.0f;
 
-			//dive to submerge
-			if (Input.GetKey("m"))
-			{
-				y = 1.0f * Time.deltaTime * kTranslateMultiplier;
+			if (Input.GetKey("m")) // Dive to submerge
+            {
+				y = 1.0f * Time.deltaTime * divingSpeed;
 			}
-			//rise back to surface
-			else if (Input.GetKey("n"))
-			{
-				y = -1.0f * Time.deltaTime * kTranslateMultiplier;
+			else if (Input.GetKey("n")) // Rise back to surface
+            {
+				y = -1.0f * Time.deltaTime * divingSpeed;
 			}
 
-			transform.Rotate(0, x, 0);
-			transform.Translate(z, y, 0);
+            Vector3 movementVector = transform.right;
+
+            // Sub movement - Depending on the button pressed move in a specific direction. If both are pressed do not move
+            if (forward && !backward)
+            {
+                if (currentMovementSpeed < maximumMovementSpeed)
+                {
+                    currentMovementSpeed += movementAcceleration * Time.deltaTime;
+                }
+            }
+            else if (backward && !forward)
+            {
+                if (currentMovementSpeed > -maximumMovementSpeed)
+                {
+                    currentMovementSpeed -= movementAcceleration * Time.deltaTime;
+                }
+            }
+            else
+            {
+                if (currentMovementSpeed > 0f)
+                {
+                    currentMovementSpeed -= movementAcceleration * Time.deltaTime;
+                }
+                else
+                {
+                    currentMovementSpeed += movementAcceleration * Time.deltaTime;
+                }
+            }
+
+            // Sub rotation - Same as above.
+            if (left && !right)
+            {
+                if (currentRotationSpeed > -maximumRotationSpeed)
+                {
+                    currentRotationSpeed -= rotationAcceleration * Time.deltaTime;
+                }
+            }
+            else if (right && !left)
+            {
+                if (currentRotationSpeed < maximumRotationSpeed)
+                {
+                    currentRotationSpeed += rotationAcceleration * Time.deltaTime;
+                }
+            }
+            else
+            {
+                if (currentRotationSpeed > 0f)
+                {
+                    currentRotationSpeed -= rotationAcceleration * Time.deltaTime;
+                }
+                else
+                {
+                    currentRotationSpeed += rotationAcceleration * Time.deltaTime;
+                }
+            }
+
+			transform.Rotate(0, Time.deltaTime * currentRotationSpeed, 0);
+			transform.Translate(movementVector * Time.deltaTime * currentMovementSpeed, Space.World);
 		}
 
 		private void MoveSub(Packet p)
 		{
-			//If the data in the packet contains the forward command, move the Sub along
-			//the relevant axis
-			Debug.Log("MoveSub");
-
-			Debug.Log((string)p.generalData[0]);
-
-			//Since the Server runs on a seperate thread, unable to directly update the translations here
-			//since Unity is a fussy bitch and doesn't let you touch translations when not on main thread.
 			if ((string)p.generalData[0] == "Forward")
 			{
-				z = z + 0.1f;
+                forward = true;
 			}
 
 			if ((string)p.generalData[0] == "Backward")
 			{
-				z = z - 0.1f;
+                backward = true;
 			}
-		}
+
+            if ((string)p.generalData[0] == "Left")
+            {
+                left = true;
+            }
+
+            if ((string)p.generalData[0] == "Right")
+            {
+                right = true;
+            }
+        }
 
         private void EndMoveSub(Packet p)
         {
-            
+            if ((string)p.generalData[0] == "Forward")
+            {
+                forward = false;
+            }
+
+            if ((string)p.generalData[0] == "Backward")
+            {
+                backward = false;
+            }
+
+            if ((string)p.generalData[0] == "Left")
+            {
+                left = false;
+            }
+
+            if ((string)p.generalData[0] == "Right")
+            {
+                right = false;
+            }
         }
     }
 }
