@@ -14,7 +14,8 @@ namespace Assets.Prototype_Assets
 
         void Start()
         {
-            NetworkLib.Client.connect(GlobalVariables.ipAddress, LibProtocolType.UDP);
+            // MOVED TO MENUBUTTONS.CS
+            //NetworkLib.Client.connect(GlobalVariables.ipAddress, LibProtocolType.UDP);
 
             moveText.text = ((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString();
 
@@ -40,7 +41,7 @@ namespace Assets.Prototype_Assets
 
 		void OnApplicationQuit()
 		{
-			NetworkLib.Client.stop();
+			//NetworkLib.Client.stop();
 		}
 
 
@@ -50,7 +51,6 @@ namespace Assets.Prototype_Assets
 
             Packet p = new Packet((int)PacketType.MOVE, ((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString());
             p.generalData.Add(((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString());
-			Debug.Log(p.generalData[0]);
             Client.SendPacket(p);
         }
 

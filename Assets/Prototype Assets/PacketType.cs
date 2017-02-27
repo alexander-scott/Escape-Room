@@ -7,6 +7,14 @@ namespace Assets.Prototype_Assets
 {
     public enum PacketType
     {
-        MOVE, WEBCAM, QRCODE, ENDMOVE
+        MOVE,
+        WEBCAM,
+        QRCODE,
+        ENDMOVE,
+        PlayerTryRegister,
+        PlayerTryRegisterResult,
+        PlayerRegister,
+        PlayerUnRegister,
+        ESCAPEPROGRESS,
     };
 }

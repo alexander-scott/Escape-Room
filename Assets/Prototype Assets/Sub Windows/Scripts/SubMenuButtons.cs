@@ -16,7 +16,6 @@ public class SubMenuButtons : MonoBehaviour {
 
     private void StartSessionBtnClicked()
     {
-        Debug.Log("Fuck you");
         //NetworkManager.singleton.StartServer();
     }
 }

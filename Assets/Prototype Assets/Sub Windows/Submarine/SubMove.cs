@@ -25,22 +25,23 @@ namespace Assets.Prototype_Assets
 
 		void Start()
 		{
+            // THIS CODE HAS BEEN MOVED TO ESCAPEROOMCONTROLLER.CS
 			// Starts a server to listen for movement commands if this client is the host
-			if (isServer)
-			{
-				// Starts a UDP Server from the Network Lib
-				NetworkLib.Server.start(LibProtocolType.UDP);
+			//if (isServer)
+			//{
+			//	// Starts a UDP Server from the Network Lib
+			//	NetworkLib.Server.start(LibProtocolType.UDP);
 
-				// Create an Observer to listen for the various pack types that are used to move the sub
-				Server.ServerPacketObserver.AddObserver((int)PacketType.MOVE, MoveSub);
-                Server.ServerPacketObserver.AddObserver((int)PacketType.ENDMOVE, EndMoveSub);
-            }
+			//	// Create an Observer to listen for the various pack types that are used to move the sub
+			//	Server.ServerPacketObserver.AddObserver((int)PacketType.MOVE, MoveSub);
+            //  Server.ServerPacketObserver.AddObserver((int)PacketType.ENDMOVE, EndMoveSub);
+            //}
 		}
 
-        void OnApplicationQuit()
-		{
-			NetworkLib.Server.stop();
-		}
+        //void OnApplicationQuit()
+		//{
+		//	NetworkLib.Server.stop();
+		//}
 
 		void Update()
 		{
@@ -115,7 +116,7 @@ namespace Assets.Prototype_Assets
 			transform.Translate(movementVector * Time.deltaTime * currentMovementSpeed, Space.World);
 		}
 
-		private void MoveSub(Packet p)
+		public void MoveSub(Packet p)
 		{
 			if ((string)p.generalData[0] == "Forward")
 			{
@@ -138,7 +139,7 @@ namespace Assets.Prototype_Assets
             }
         }
 
-        private void EndMoveSub(Packet p)
+        public void EndMoveSub(Packet p)
         {
             if ((string)p.generalData[0] == "Forward")
             {
