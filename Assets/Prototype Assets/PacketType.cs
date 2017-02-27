@@ -16,5 +16,9 @@ namespace Assets.Prototype_Assets
         PlayerRegister,
         PlayerUnRegister,
         ESCAPEPROGRESS,
+        EscapeStartRequest,
+        CheckEscapeStart,
+        CheckEscapeStartResponse,
+        ESCAPESTARTED,
     };
 }

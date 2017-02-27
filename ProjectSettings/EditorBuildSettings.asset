@@ -16,4 +16,6 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/QRScanner.unity
   - enabled: 0
+    path: Assets/Scenes/StartScene.unity
+  - enabled: 0
     path: Assets/Scenes/Sonar.unity

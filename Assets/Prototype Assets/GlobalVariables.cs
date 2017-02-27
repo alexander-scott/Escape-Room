@@ -6,6 +6,7 @@ namespace Assets.Prototype_Assets
         public static string ipAddress = "127.0.0.1";
         public static int playerNumber = 0;
         public static bool mobilePlayerRegistered = false;
+        public static bool escapeStarted = false;
 
         public enum Direction { Forward, Backward, Left, Right, Sonar };
 

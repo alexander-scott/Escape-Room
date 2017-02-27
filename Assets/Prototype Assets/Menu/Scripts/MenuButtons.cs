@@ -60,8 +60,8 @@ namespace Assets.Prototype_Assets
 
         private void Update()
         {
-            // Since the Server runs on a seperate thread we can directly update this stuff. 
-            // This is a hack to make modifcations to gameobjects/components
+            // Since the Server runs on a seperate thread we can't directly update this stuff. 
+            // This is a hack to make modifcations to gameobjects/components such as text
             if (updateUI)
             {
                 updateUI = false;
@@ -91,7 +91,7 @@ namespace Assets.Prototype_Assets
             }
             else
             {
-                DontDestroyOnLoad(this); // Don't end the client if we're registered. Keep it alive so the sub controls can send packets
+                DontDestroyOnLoad(this); // Don't end the client if we're registered. Keep it alive so the sub controls can send packets.
             }
         }
 
@@ -104,6 +104,9 @@ namespace Assets.Prototype_Assets
                     // This is the only place that the client gets created on the mobile app. It stays alive so other scenes can use it.
                     NetworkLib.Client.connect(GlobalVariables.ipAddress, LibProtocolType.UDP);
                     NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.PlayerTryRegisterResult, PlayerTryRegisterResult);
+                    NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.ESCAPESTARTED, EscapeStarted);
+                    NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.CheckEscapeStartResponse, CheckEscapeStartResponse);
+
                     clientCreated = true;
                 }
 
@@ -150,12 +153,35 @@ namespace Assets.Prototype_Assets
                     Client.SendPacket(pack);
 
                     GlobalVariables.mobilePlayerRegistered = true;
+
+                    CheckEscapeStart();
                 }
                 else // It is already taken
                 {
                     GlobalVariables.mobilePlayerRegistered = false;
                 }
             }
+        }
+
+        // Asks the server if the escape has started yet
+        private void CheckEscapeStart()
+        {
+            Packet p = new Packet((int)PacketType.CheckEscapeStart, PacketType.CheckEscapeStart.ToString());
+            Client.SendPacket(p);
+        }
+
+        // This is the response from the server telling us if the game has started or not
+        private void CheckEscapeStartResponse(Packet p)
+        {
+            if (bool.Parse(p.generalData[0].ToString())) // Game has started
+            {
+                GlobalVariables.escapeStarted = true;
+            }
+        }
+
+        private void EscapeStarted(Packet p)
+        {
+            GlobalVariables.escapeStarted = true;
         }
 
         private void SubButtonClicked()
@@ -165,9 +191,13 @@ namespace Assets.Prototype_Assets
 
         private void ControlsButtonClicked()
         {
-            if (GlobalVariables.mobilePlayerRegistered)
+            if (GlobalVariables.mobilePlayerRegistered && GlobalVariables.escapeStarted)
             {
                 SceneManager.LoadScene("Controls");
+            }
+            else if (GlobalVariables.mobilePlayerRegistered && !GlobalVariables.escapeStarted)
+            {
+                infoText.text = "Please start the game first!";
             }
             else
             {
