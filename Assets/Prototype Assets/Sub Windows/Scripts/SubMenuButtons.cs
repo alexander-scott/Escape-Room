@@ -4,18 +4,34 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 
-public class SubMenuButtons : MonoBehaviour {
+namespace Assets.Prototype_Assets
+{
+    public class SubMenuButtons : MonoBehaviour {
 
-    public Button startSessionBtn;
-    //public Button subControls;
+        public Button startSessionBtn;
+        public Button joinSessionBtn;
+        public Canvas canvas;
+        //public Button subControls;
 
-    private void Start()
-    {
-        startSessionBtn.onClick.AddListener(StartSessionBtnClicked);
-    }
+        private void Start()
+        {
+            startSessionBtn.onClick.AddListener(StartSessionBtnClicked);
+            joinSessionBtn.onClick.AddListener(JoinSessionBtnClicked);
 
-    private void StartSessionBtnClicked()
-    {
-        //NetworkManager.singleton.StartServer();
+        }
+
+        private void StartSessionBtnClicked()
+        {
+            NetworkManager.singleton.StartHost();
+            canvas.enabled = false;
+        }
+
+        private void JoinSessionBtnClicked()
+        {
+            NetworkManager.singleton.networkAddress = GlobalVariables.ipAddress;
+            NetworkManager.singleton.networkPort = 7777;
+            NetworkManager.singleton.StartClient();
+            canvas.enabled = false;
+        }
     }
 }

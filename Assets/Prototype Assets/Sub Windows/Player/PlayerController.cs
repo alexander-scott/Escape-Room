@@ -9,8 +9,6 @@ namespace Assets.Prototype_Assets
     public class PlayerController : NetworkBehaviour
     {
         private bool shaking;
-        private Vector3 originPos;
-        private Quaternion originRot;
 
         //camera shake vars
         public float shakeDecay;
@@ -47,7 +45,7 @@ namespace Assets.Prototype_Assets
             shakeIntensity = 0.2f;
 
             debugFloat = 0.0f;
-            originRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
+            //originRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
 
 
             defaultFog = RenderSettings.fog;
@@ -95,11 +93,70 @@ namespace Assets.Prototype_Assets
             {
                 return;
             }
+
+            switch (GlobalVariables.playerNumber)
+            {
+                //North facing camera
+                case 0:
+                    Quaternion northRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
+                    Vector3 northPos = new Vector3(mSubmarine.transform.position.x + kWindowOffset, mSubmarine.transform.position.y, mSubmarine.transform.position.z);
+                    this.transform.position = northPos;
+                    this.transform.rotation = northRot;
+                    ShakeAtInterval(northRot, northPos);
+                    debugText = "Camera North";
+                    break;
+                //East facing camera
+                case 1:
+                    Quaternion eastRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y - 90.0f, mSubmarine.transform.rotation.z);
+                    Vector3 eastPos = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z - kWindowOffset);
+                    this.transform.rotation = eastRot;
+                    this.transform.position = eastPos;
+                    ShakeAtInterval(eastRot, eastPos);
+                    debugText = "Camera East";
+                    break;
+                //South facing camera
+                case 2:
+                    Quaternion southRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y, mSubmarine.transform.rotation.z);
+                    Vector3 southPos = new Vector3(mSubmarine.transform.position.x - (2 * kWindowOffset), mSubmarine.transform.position.y, mSubmarine.transform.position.z);
+                    this.transform.position = southPos;
+                    this.transform.rotation = southRot;
+                    ShakeAtInterval(southRot, southPos);
+                    debugText = "Camera South";
+                    break;
+                //West facing camera
+                case 3:
+                    Quaternion westRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 90.0f, mSubmarine.transform.rotation.z);
+                    Vector3 westPos = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z + kWindowOffset);
+                    this.transform.position = westPos;
+                    this.transform.rotation = westRot;
+                    ShakeAtInterval(westRot, westPos);
+                    debugText = "Camera West";
+                    break;
+            }
+            //SwitchCamera();
+        }
+
+        private void CameraShake(Quaternion originRot, Vector3 originPos)
+        {
+            this.transform.position = originPos + Random.insideUnitSphere * shakeIntensity;
+            this.transform.rotation = new Quaternion
+            (
+                originRot.x + Random.Range(0, shakeIntensity) * shakeScalar,
+                originRot.y + Random.Range(1, 1),
+                originRot.z + Random.Range(0, shakeIntensity) * shakeScalar,
+                originRot.w + Random.Range(1, 1) * shakeScalar
+            );
+
+            shakeIntensity -= shakeDecay;
+        }
+
+        private void ShakeAtInterval(Quaternion originRot, Vector3 originPos)
+        {
             if (shaking)
             {
                 if (shakeIntensity > 0)
                 {
-                    CameraShake();
+                    CameraShake(originRot, originPos);
                 }
                 else
                 {
@@ -117,52 +174,8 @@ namespace Assets.Prototype_Assets
                 else
                 {
                     debugFloat++;
-                    switch (GlobalVariables.playerNumber)
-                    {
-                        //North facing camera
-                        case 0:
-                            this.transform.position = new Vector3(mSubmarine.transform.position.x + kWindowOffset, mSubmarine.transform.position.y, mSubmarine.transform.position.z);
-                            this.transform.rotation = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
-                            debugText = "Camera North";
-                            break;
-                        //East facing camera
-                        case 1:
-                            this.transform.position = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z - kWindowOffset);
-                            this.transform.rotation = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y - 90.0f, mSubmarine.transform.rotation.z);
-                            debugText = "Camera East";
-                            break;
-                        //South facing camera
-                        case 2:
-
-                            Vector3 oppositeVector = mSubmarine.transform.position;
-                            this.transform.position = new Vector3(mSubmarine.transform.position.x - (2 * kWindowOffset), mSubmarine.transform.position.y, mSubmarine.transform.position.z);
-                            this.transform.rotation = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y, mSubmarine.transform.rotation.z);
-                            debugText = "Camera South";
-                            break;
-                        //West facing camera
-                        case 3:
-                            this.transform.position = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z + kWindowOffset);
-                            this.transform.rotation = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 90.0f, mSubmarine.transform.rotation.z);
-                            debugText = "Camera West";
-                            break;
-                    }
                 }
-                //SwitchCamera();
             }
-        }
-
-        private void CameraShake()
-        {
-            this.transform.position = originPos + Random.insideUnitSphere * shakeIntensity;
-            this.transform.rotation = new Quaternion
-            (
-                originRot.x + Random.Range(0, shakeIntensity) * shakeScalar,
-                originRot.y + Random.Range(1, 1),
-                originRot.z + Random.Range(0, shakeIntensity) * shakeScalar,
-                originRot.w + Random.Range(1, 1) * shakeScalar
-            );
-
-            shakeIntensity -= shakeDecay;
         }
 
         private void SwitchCamera()

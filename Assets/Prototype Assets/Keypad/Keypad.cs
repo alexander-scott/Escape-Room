@@ -97,7 +97,7 @@ public class Keypad : MonoBehaviour {
                 result.text = "Access Granted!";
                 result.color = Color.green;
                 result.enabled = true;
-                //Send message to Alex's stuff
+                //Send message to Alex's stuff               
             }
             else
             {
