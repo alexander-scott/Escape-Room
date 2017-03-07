@@ -137,6 +137,10 @@ namespace Assets.Prototype_Assets
                     ShakeAtInterval(westRot, westPos);
                     debugText = "Camera West";
                     break;
+                //RadarCamera
+                case 4:
+                    debugText = "Camera Radar";
+                    break;
             }
             //SwitchCamera();
         }
@@ -189,7 +193,7 @@ namespace Assets.Prototype_Assets
             {
                 activeCamera++;
 
-                if (activeCamera == 4)
+                if (activeCamera == 5)
                 {
                     activeCamera = 0;
                 }

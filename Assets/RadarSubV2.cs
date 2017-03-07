@@ -32,19 +32,11 @@ public class RadarSubV2 : MonoBehaviour {
 
     public Transform helpTransform;
 
+    private GameObject[] trackedObjects;
+
     // Use this for initialization
     void Start () {
-        //createRadarObjects();
-
-        source = GetComponent<AudioSource>();
-        InvokeRepeating("PlayClipAndChange", 0.01f, 5.0f);
-    }
-	
-	// Update is called once per frame
-	void Update () {
-
-        GameObject[] trackedObjects;
-
+        
         // Draw blips
         if (radarBlip1Active)
         {
@@ -84,6 +76,13 @@ public class RadarSubV2 : MonoBehaviour {
                 createRadarObjects(go);
             }
         }
+
+        source = GetComponent<AudioSource>();
+        InvokeRepeating("PlayClipAndChange", 0.01f, 5.0f);
+    }
+	
+	// Update is called once per frame
+	void Update () {
 
         for (int i = 0; i < radarObjects.Count; i++)
         {

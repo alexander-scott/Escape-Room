@@ -5,19 +5,19 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Menu.unity
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Test.unity
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Controls.unity
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Debug/WebcamDebug.unity
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/QRScanner.unity
   - enabled: 1
     path: Assets/Scenes/StartScene.unity
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Sonar.unity
   - enabled: 1
     path: Assets/Scenes/Diagnostics.unity
