@@ -89,6 +89,11 @@ namespace Assets.Prototype_Assets
                 RenderSettings.skybox = defaultSkybox;
             }
 
+            if (!GlobalVariables.escapeStarted)
+            {
+                return;
+            }
+
             if (!isLocalPlayer)
             {
                 return;
@@ -200,6 +205,14 @@ namespace Assets.Prototype_Assets
         {
             if (isLocalPlayer)
                 GUI.Label(textArea, debugText);
+
+            if (!GlobalVariables.escapeStarted)
+            {
+                var centeredStyle = GUI.skin.GetStyle("Label");
+                centeredStyle.alignment = TextAnchor.UpperCenter;
+                GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 25, 100, 50), "Waiting for escape to start", centeredStyle);
+            }
+
             GUI.Label(textArea2, debugText2);
         }
     }

@@ -212,7 +212,8 @@ namespace Assets.Prototype_Assets
 
         private void SonarButtonClicked()
         {
-            SceneManager.LoadScene("Sonar");
+            //SceneManager.LoadScene("Sonar");
+            SceneManager.LoadScene("Test");
         }
 
         public void IPAddressChanged(string ipaddress)

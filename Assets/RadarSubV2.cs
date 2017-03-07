@@ -23,13 +23,22 @@ public class RadarSubV2 : MonoBehaviour {
 
     public GameObject radarPrefab;
     public float switchDistance;
+
     List<GameObject> borderObjects;
     List<GameObject> radarObjects;
+
+    public AudioClip radarPing;
+    private AudioSource source;
+
+    public Transform helpTransform;
 
     // Use this for initialization
     void Start () {
         //createRadarObjects();
-	}
+
+        source = GetComponent<AudioSource>();
+        InvokeRepeating("PlayClipAndChange", 0.01f, 5.0f);
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -78,9 +87,18 @@ public class RadarSubV2 : MonoBehaviour {
 
         for (int i = 0; i < radarObjects.Count; i++)
         {
-            //Destroy(radarObjects[i]);
-            //radarObjects[i];
-            DestroyObject(radarObjects[i], .5f);
+            if(Vector3.Distance(radarObjects[i].transform.position, transform.position) > switchDistance)
+            {
+                helpTransform.LookAt(radarObjects[i].transform);
+                borderObjects[i].transform.position = transform.position + switchDistance * helpTransform.forward;
+                borderObjects[i].layer = LayerMask.NameToLayer("Radar");
+                radarObjects[i].layer = LayerMask.NameToLayer("Invisible");
+            }
+            else
+            {
+                borderObjects[i].layer = LayerMask.NameToLayer("Invisible");
+                radarObjects[i].layer = LayerMask.NameToLayer("Radar");
+            }
         }
     }
 
@@ -88,11 +106,17 @@ public class RadarSubV2 : MonoBehaviour {
     {
         
         radarObjects = new List<GameObject>();
+        borderObjects = new List<GameObject>();
 
         GameObject k = Instantiate(radarPrefab, go.transform.position, Quaternion.identity) as GameObject;
         radarObjects.Add(k);
-        //GameObject j = Instantiate(radarPrefab, go.transform.position, Quaternion.identity) as GameObject;
-        //borderObjects.Add(j);
+        GameObject j = Instantiate(radarPrefab, go.transform.position, Quaternion.identity) as GameObject;
+        borderObjects.Add(k);
 
+    }
+
+    void PlayClipAndChange()
+    {
+        source.PlayOneShot(radarPing);
     }
 }
