@@ -1,11 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using NetworkLib;
-using UnityEngine.Networking;
 using System;
+using System.Collections;
 
 namespace Assets.Prototype_Assets
 {
@@ -14,7 +12,6 @@ namespace Assets.Prototype_Assets
         public Button subButton;
         public Button controlsButton;
         public Button qrScannerButton;
-        public Button sonarButton;
 
         public Button connectButton;
 
@@ -29,12 +26,13 @@ namespace Assets.Prototype_Assets
 
         private Text connectButtonText;
 
+        private float connectionTimer = 0f;
+
         private void Start()
         {
             subButton.onClick.AddListener(SubButtonClicked);
             controlsButton.onClick.AddListener(ControlsButtonClicked);
             qrScannerButton.onClick.AddListener(QRButtonClicked);
-            sonarButton.onClick.AddListener(SonarButtonClicked);
 
             connectButton.onClick.AddListener(ConnectButtonClicked);
 
@@ -81,12 +79,32 @@ namespace Assets.Prototype_Assets
                     infoText.text = "Someone else has taken this player!";
                 }
             }
+
+            if (clientCreated)
+            {
+                connectionTimer += Time.deltaTime;
+
+                // If we haven't recieved a message from the server in ~2 secs it must have been ended
+                if (connectionTimer > 2f)
+                {
+                    // ASSUME HOST IS DEAD
+                    NetworkLib.Client.stop();
+                    GlobalVariables.mobilePlayerRegistered = false;
+
+                    // Reload the scene as a quick way of resetting everything
+                    SceneManager.LoadScene("Menu");
+                }
+            }
         }
 
         void OnApplicationQuit()
         {
             if (GlobalVariables.mobilePlayerRegistered)
             {
+                Packet p = new Packet((int)PacketType.PlayerUnRegister, ((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString());
+                p.generalData.Add(((GlobalVariables.Direction)GlobalVariables.playerNumber));
+                Client.SendPacket(p);
+
                 NetworkLib.Client.stop();
             }
             else
@@ -103,9 +121,7 @@ namespace Assets.Prototype_Assets
                 {
                     // This is the only place that the client gets created on the mobile app. It stays alive so other scenes can use it.
                     NetworkLib.Client.connect(GlobalVariables.ipAddress, LibProtocolType.UDP);
-                    NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.PlayerTryRegisterResult, PlayerTryRegisterResult);
-                    NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.ESCAPESTARTED, EscapeStarted);
-                    NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.CheckEscapeStartResponse, CheckEscapeStartResponse);
+                    AddPacketObservers();
 
                     clientCreated = true;
                 }
@@ -137,6 +153,14 @@ namespace Assets.Prototype_Assets
                 dropDownList.enabled = true;
                 controlsButton.gameObject.GetComponent<Image>().color = Color.gray;
             }
+        }
+
+        private void AddPacketObservers()
+        {
+            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.PlayerTryRegisterResult, PlayerTryRegisterResult);
+            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.ESCAPESTARTED, EscapeStarted);
+            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.CheckEscapeStartResponse, CheckEscapeStartResponse);
+            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.CheckClientAlive, CheckClientAlive);
         }
 
         private void PlayerTryRegisterResult(Packet p)
@@ -210,15 +234,17 @@ namespace Assets.Prototype_Assets
             SceneManager.LoadScene("QRScanner");
         }
 
-        private void SonarButtonClicked()
+        private void CheckClientAlive(Packet p)
         {
-            //SceneManager.LoadScene("Sonar");
-            SceneManager.LoadScene("Test");
+            connectionTimer = 0f;
         }
 
         public void IPAddressChanged(string ipaddress)
         {
             GlobalVariables.ipAddress = ipaddress;
+
+            PlayerPrefs.SetString("IPAddress", ipaddress); // Save the new ip address locally on the device
+            PlayerPrefs.Save();
         }
 
         public void PlayerSelectChanged(int val)

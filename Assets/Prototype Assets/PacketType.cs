@@ -19,6 +19,7 @@ namespace Assets.Prototype_Assets
         EscapeStartRequest,
         CheckEscapeStart,
         CheckEscapeStartResponse,
+        CheckClientAlive,
         ESCAPESTARTED,
     };
 }

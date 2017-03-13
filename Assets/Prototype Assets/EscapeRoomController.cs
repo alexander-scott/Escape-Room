@@ -36,6 +36,8 @@ namespace Assets.Prototype_Assets
 
                 Server.ServerPacketObserver.AddObserver((int)PacketType.MOVE, submove.MoveSub);
                 Server.ServerPacketObserver.AddObserver((int)PacketType.ENDMOVE, submove.EndMoveSub);
+
+                StartCoroutine(CheckClientsAlive());
             }
         }
 
@@ -209,6 +211,21 @@ namespace Assets.Prototype_Assets
             for (int i = 0; i < Server.udpClients.Count; i++)
             {
                 Server.udpClients[i].SendPacket(pack);
+            }
+        }
+
+        private IEnumerator CheckClientsAlive()
+        {
+            Packet pack = new Packet((int)PacketType.CheckClientAlive, PacketType.CheckClientAlive.ToString());
+
+            while (true) // PERMANENTLY ACTIVE
+            {
+                for (int i = 0; i < Server.udpClients.Count; i++)
+                {
+                    Server.udpClients[i].SendPacket(pack);
+                }
+
+                yield return new WaitForSeconds(1f);
             }
         }
     }

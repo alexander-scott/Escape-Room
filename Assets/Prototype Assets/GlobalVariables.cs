@@ -1,9 +1,11 @@
 ﻿
+using UnityEngine;
+
 namespace Assets.Prototype_Assets
 {
     public static class GlobalVariables
     {
-        public static string ipAddress = "127.0.0.1";
+        public static string ipAddress = PlayerPrefs.GetString("IPAddress", "127.0.0.1");
         public static int playerNumber = 0;
         public static bool mobilePlayerRegistered = false;
         public static bool escapeStarted = false;
