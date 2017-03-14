@@ -2,14 +2,15 @@
 using System.Collections;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using NetworkLib;
 
 
 namespace Assets.Prototype_Assets
 {
     public class PlayerController : NetworkBehaviour
     {
-        private bool shaking;
-
+        private bool shaking = false;
+        private bool subHasBeenHit = false;
         //camera shake vars
         public float shakeDecay;
         public float shakeIntensity;
@@ -20,7 +21,9 @@ namespace Assets.Prototype_Assets
         Rect textArea = new Rect(10, 10, Screen.width, Screen.height);
         Rect textArea2 = new Rect(10, 20, Screen.width, Screen.height);
         public Camera cam;
+        private Camera[] radarCams;
         int activeCamera = 0;
+        public RadarSubV2 radv2 = new RadarSubV2();
 
         //how far the window is away from the sub
         const float kWindowOffset = 5.0f;
@@ -28,8 +31,13 @@ namespace Assets.Prototype_Assets
         //the sub...
         private GameObject mSubmarine;
 
+        //That whale/shark thing
+        private GameObject mWhale;
+
         //underwater stuff, needs extracting out
         public float underwaterLevel = 6.4f;
+
+        private float groundLevel = -22.0f;
 
         //default fog settings from scene
         private bool defaultFog;
@@ -47,7 +55,9 @@ namespace Assets.Prototype_Assets
             debugFloat = 0.0f;
             //originRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
 
-
+            radarCams = Camera.allCameras;
+            radarCams[2].gameObject.SetActive(false);
+            
             defaultFog = RenderSettings.fog;
             defaultFogColour = RenderSettings.fogColor;
             defaultFogDensity = RenderSettings.fogDensity;
@@ -59,12 +69,15 @@ namespace Assets.Prototype_Assets
             //find sub in scene
             mSubmarine = GameObject.FindGameObjectWithTag("Submarine");
 
+            //find the whale
+            mWhale = GameObject.FindGameObjectWithTag("Whale");
+
             //init to North Camera
             this.transform.position = new Vector3(mSubmarine.transform.position.x + 5, mSubmarine.transform.position.y, mSubmarine.transform.position.z);
             //this.transform.position = new Vector3(5.0f, 0.0f, 0f);
             this.transform.rotation = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
             //this.transform.eulerAngles = new Vector3(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
-            debugText = "Camera 1";
+            debugText = "Camera not setup";
 
             if (isLocalPlayer) return;
             cam.enabled = false;
@@ -89,10 +102,43 @@ namespace Assets.Prototype_Assets
                 RenderSettings.skybox = defaultSkybox;
             }
 
-            if (!GlobalVariables.escapeStarted)
+            if (isServer && GlobalVariables.escapeStarted)
             {
-                return;
+                if (mSubmarine.transform.position.y <= groundLevel)
+                {
+                    //Stop decsent
+                    
+                    //WHALE COMING IN BRO
+                    mWhale.transform.LookAt(mSubmarine.transform.position);
+                    mWhale.transform.Rotate(0.0f, 180.0f, 0.0f);
+
+                    Vector3 tar = new Vector3(mSubmarine.transform.position.x + 5.0f, mSubmarine.transform.position.y + 1.0f, mSubmarine.transform.position.z);
+                    mWhale.transform.position = Vector3.MoveTowards(mWhale.transform.position, tar, 5.0f * Time.deltaTime);
+
+                    if (mWhale.transform.position == tar)
+                    {
+                        //@TODO Change this to only happen once.
+                        Packet p = new Packet((int)PacketType.SHAKE, "Server");
+
+                        for (int i = 0; i < Server.udpClients.Count; i++)
+                        {
+                            Server.udpClients[i].SendPacket(p);
+                        }
+                    }
+                }
+
+
+                if (mSubmarine.transform.position.y > groundLevel)
+                {
+                    //this.transform.position = new Vector3(this.transform.position.x, this.transform.position.y - 0.01f, this.transform.position.z);
+
+                    Vector3 groundPos = new Vector3(mSubmarine.transform.position.x, -25.0f, mSubmarine.transform.position.z);
+                    mSubmarine.transform.position = Vector3.MoveTowards(mSubmarine.transform.position, groundPos, 10.0f * Time.deltaTime);
+
+                    Debug.Log("Decending");
+                }
             }
+
 
             if (!isLocalPlayer)
             {
@@ -107,7 +153,7 @@ namespace Assets.Prototype_Assets
                     Vector3 northPos = new Vector3(mSubmarine.transform.position.x + kWindowOffset, mSubmarine.transform.position.y, mSubmarine.transform.position.z);
                     this.transform.position = northPos;
                     this.transform.rotation = northRot;
-                    ShakeAtInterval(northRot, northPos);
+                    ShakeAtInterval();
                     debugText = "Camera North";
                     break;
                 //East facing camera
@@ -116,7 +162,7 @@ namespace Assets.Prototype_Assets
                     Vector3 eastPos = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z - kWindowOffset);
                     this.transform.rotation = eastRot;
                     this.transform.position = eastPos;
-                    ShakeAtInterval(eastRot, eastPos);
+                    ShakeAtInterval();
                     debugText = "Camera East";
                     break;
                 //South facing camera
@@ -125,7 +171,7 @@ namespace Assets.Prototype_Assets
                     Vector3 southPos = new Vector3(mSubmarine.transform.position.x - (2 * kWindowOffset), mSubmarine.transform.position.y, mSubmarine.transform.position.z);
                     this.transform.position = southPos;
                     this.transform.rotation = southRot;
-                    ShakeAtInterval(southRot, southPos);
+                    ShakeAtInterval();
                     debugText = "Camera South";
                     break;
                 //West facing camera
@@ -134,57 +180,56 @@ namespace Assets.Prototype_Assets
                     Vector3 westPos = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z + kWindowOffset);
                     this.transform.position = westPos;
                     this.transform.rotation = westRot;
-                    ShakeAtInterval(westRot, westPos);
+                    ShakeAtInterval();
                     debugText = "Camera West";
                     break;
                 //RadarCamera
                 case 4:
                     debugText = "Camera Radar";
+                    radarCams[2].gameObject.SetActive(true);
+                    radarCams[1].gameObject.SetActive(false);
+                    //radarCams[0].gameObject.SetActive(false);
                     break;
             }
             //SwitchCamera();
         }
 
-        private void CameraShake(Quaternion originRot, Vector3 originPos)
+        private void CameraShake()
         {
-            this.transform.position = originPos + Random.insideUnitSphere * shakeIntensity;
+            Vector3 origPos = this.transform.position;
+            Quaternion origRot = this.transform.rotation;
+
+            this.transform.position = origPos + Random.insideUnitSphere * shakeIntensity;
             this.transform.rotation = new Quaternion
             (
-                originRot.x + Random.Range(0, shakeIntensity) * shakeScalar,
-                originRot.y + Random.Range(1, 1),
-                originRot.z + Random.Range(0, shakeIntensity) * shakeScalar,
-                originRot.w + Random.Range(1, 1) * shakeScalar
+                origRot.x + Random.Range(0, shakeIntensity) * shakeScalar,
+                origRot.y + Random.Range(1, 1),
+                origRot.z + Random.Range(0, shakeIntensity) * shakeScalar,
+                origRot.w + Random.Range(1, 1) * shakeScalar
             );
 
             shakeIntensity -= shakeDecay;
         }
 
-        private void ShakeAtInterval(Quaternion originRot, Vector3 originPos)
+        private void ShakeAtInterval()
         {
             if (shaking)
             {
                 if (shakeIntensity > 0)
                 {
-                    CameraShake(originRot, originPos);
+                    CameraShake();
                 }
                 else
                 {
                     shaking = false;
+                    shakeIntensity = 0.2f;
                 }
             }
-            else
-            {
-                if (debugFloat > 300.0f)
-                {
-                    shaking = true;
-                    debugFloat = 0.0f;
-                    shakeIntensity = 3.0f;
-                }
-                else
-                {
-                    debugFloat++;
-                }
-            }
+        }
+
+        public void EnableShake(Packet p)
+        {
+            shaking = true;
         }
 
         private void SwitchCamera()

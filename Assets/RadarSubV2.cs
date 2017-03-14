@@ -24,8 +24,10 @@ public class RadarSubV2 : MonoBehaviour {
     public GameObject radarPrefab;
     public float switchDistance;
 
-    List<GameObject> borderObjects;
-    List<GameObject> radarObjects;
+    List<GameObject> borderObjects = new List<GameObject>();
+    List<GameObject> radarObjects = new List<GameObject>();
+    List<GameObject> borderObjectsupd = new List<GameObject>();
+    List<GameObject> radarObjectsupd = new List<GameObject>();
 
     public AudioClip radarPing;
     private AudioSource source;
@@ -33,49 +35,54 @@ public class RadarSubV2 : MonoBehaviour {
     public Transform helpTransform;
 
     private GameObject[] trackedObjects;
+    private Vector3[] lastPosition;
+
+    public GameObject RadarCam;
 
     // Use this for initialization
     void Start () {
-        
-        // Draw blips
-        if (radarBlip1Active)
-        {
-            // Find all game objects
-            trackedObjects = GameObject.FindGameObjectsWithTag(radarBlip1Tag);
 
-            // Iterate through them and call drawBlip function
-            foreach (GameObject go in trackedObjects)
-            {
-                createRadarObjects(go);
-            }
-        }
-        if (radarBlip2Active)
-        {
-            trackedObjects = GameObject.FindGameObjectsWithTag(radarBlip2Tag);
+        //RadarCam.SetActive(false);
 
-            foreach (GameObject go in trackedObjects)
-            {
-                createRadarObjects(go);
-            }
-        }
-        if (radarBlip3Active)
-        {
-            trackedObjects = GameObject.FindGameObjectsWithTag(radarBlip3Tag);
+        //// Draw blips
+        //if (radarBlip1Active)
+        //{
+        //    // Find all game objects
+        //    trackedObjects = GameObject.FindGameObjectsWithTag(radarBlip1Tag);
 
-            foreach (GameObject go in trackedObjects)
-            {
-                createRadarObjects(go);
-            }
-        }
-        if (radarBlip4Active)
-        {
-            trackedObjects = GameObject.FindGameObjectsWithTag(radarBlip4Tag);
+        //    // Iterate through them and call drawBlip function
+        //    foreach (GameObject go in trackedObjects)
+        //    {
+        //        createRadarObjects(go);
+        //    }
+        //}
+        //if (radarBlip2Active)
+        //{
+        //    trackedObjects = GameObject.FindGameObjectsWithTag(radarBlip2Tag);
 
-            foreach (GameObject go in trackedObjects)
-            {
-                createRadarObjects(go);
-            }
-        }
+        //    foreach (GameObject go in trackedObjects)
+        //    {
+        //        createRadarObjects(go);
+        //    }
+        //}
+        //if (radarBlip3Active)
+        //{
+        //    trackedObjects = GameObject.FindGameObjectsWithTag(radarBlip3Tag);
+
+        //    foreach (GameObject go in trackedObjects)
+        //    {
+        //        createRadarObjects(go);
+        //    }
+        //}
+        //if (radarBlip4Active)
+        //{
+        //    trackedObjects = GameObject.FindGameObjectsWithTag(radarBlip4Tag);
+
+        //    foreach (GameObject go in trackedObjects)
+        //    {
+        //        createRadarObjects(go);
+        //    }
+        //}
 
         source = GetComponent<AudioSource>();
         InvokeRepeating("PlayClipAndChange", 0.01f, 5.0f);
@@ -84,19 +91,42 @@ public class RadarSubV2 : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        for (int i = 0; i < radarObjects.Count; i++)
+        if (radarBlip1Active)
         {
-            if(Vector3.Distance(radarObjects[i].transform.position, transform.position) > switchDistance)
+            // Find all game objects
+            trackedObjects = GameObject.FindGameObjectsWithTag(radarBlip1Tag);
+            
+            // Iterate through them and call drawBlip function
+            foreach (GameObject go in trackedObjects)
             {
-                helpTransform.LookAt(radarObjects[i].transform);
-                borderObjects[i].transform.position = transform.position + switchDistance * helpTransform.forward;
-                borderObjects[i].layer = LayerMask.NameToLayer("Radar");
-                radarObjects[i].layer = LayerMask.NameToLayer("Invisible");
+                updateRadarObjects(go);
             }
-            else
+        }
+        if (radarBlip2Active)
+        {
+            trackedObjects = GameObject.FindGameObjectsWithTag(radarBlip2Tag);
+
+            foreach (GameObject go in trackedObjects)
             {
-                borderObjects[i].layer = LayerMask.NameToLayer("Invisible");
-                radarObjects[i].layer = LayerMask.NameToLayer("Radar");
+                updateRadarObjects(go);
+            }
+        }
+        if (radarBlip3Active)
+        {
+            trackedObjects = GameObject.FindGameObjectsWithTag(radarBlip3Tag);
+
+            foreach (GameObject go in trackedObjects)
+            {
+                updateRadarObjects(go);
+            }
+        }
+        if (radarBlip4Active)
+        {
+            trackedObjects = GameObject.FindGameObjectsWithTag(radarBlip4Tag);
+
+            foreach (GameObject go in trackedObjects)
+            {
+                updateRadarObjects(go);
             }
         }
     }
@@ -104,18 +134,63 @@ public class RadarSubV2 : MonoBehaviour {
     void createRadarObjects(GameObject go)
     {
         
-        radarObjects = new List<GameObject>();
-        borderObjects = new List<GameObject>();
+        //radarObjects = new List<GameObject>();
+       // borderObjects = new List<GameObject>();
 
         GameObject k = Instantiate(radarPrefab, go.transform.position, Quaternion.identity) as GameObject;
-        radarObjects.Add(k);
+        k.transform.SetParent(go.transform);
         GameObject j = Instantiate(radarPrefab, go.transform.position, Quaternion.identity) as GameObject;
-        borderObjects.Add(k);
+        j.transform.SetParent(go.transform);
+        drawBlips(k, j);
 
+    }
+
+    void updateRadarObjects(GameObject go)
+    {
+        clearBlips(go);
+        GameObject k = Instantiate(radarPrefab, go.transform.position, Quaternion.identity) as GameObject;
+        GameObject j = Instantiate(radarPrefab, go.transform.position, Quaternion.identity) as GameObject;
+        k.transform.SetParent(go.transform);
+        j.transform.SetParent(go.transform);
+        drawBlips(k , j);
+    }
+
+    void drawBlips(GameObject k, GameObject j)
+    {
+       
+            if (Vector3.Distance(k.transform.position, transform.position) > switchDistance)
+            {
+                helpTransform.LookAt(k.transform);
+                //j.transform.position = transform.position + switchDistance * helpTransform.forward;
+                j.layer = LayerMask.NameToLayer("Radar");
+                k.layer = LayerMask.NameToLayer("Invisible");
+            }
+            else
+            {
+                j.layer = LayerMask.NameToLayer("Invisible");
+                k.layer = LayerMask.NameToLayer("Radar");
+            }
+        
+    }
+
+    void clearBlips(GameObject go)
+    {
+        int children = go.transform.childCount;
+
+        for (int i = 0; i < children; i++)
+        {
+            Transform po = go.transform.GetChild(i);
+            Destroy(po.gameObject);
+        }
     }
 
     void PlayClipAndChange()
     {
         source.PlayOneShot(radarPing);
+    }
+
+    public void changeCamera()
+    {
+        RadarCam.SetActive(true);
     }
 }

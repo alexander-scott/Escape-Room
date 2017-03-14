@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Submarine
   - enemy
+  - Whale
   layers:
   - Default
   - TransparentFX

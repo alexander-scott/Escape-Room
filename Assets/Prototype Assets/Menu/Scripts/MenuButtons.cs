@@ -89,10 +89,17 @@ namespace Assets.Prototype_Assets
                 {
                     // ASSUME HOST IS DEAD
                     NetworkLib.Client.stop();
-                    GlobalVariables.mobilePlayerRegistered = false;
 
-                    // Reload the scene as a quick way of resetting everything
-                    SceneManager.LoadScene("Menu");
+                    clientCreated = false;
+                    awaitingResponse = false;
+
+                    GlobalVariables.mobilePlayerRegistered = false;
+                    infoText.text = "Unable to connect to host";
+                    connectButtonText.text = "Connect";
+                    dropDownList.enabled = true;
+                    controlsButton.gameObject.GetComponent<Image>().color = Color.gray;
+
+                    connectionTimer = 0f; 
                 }
             }
         }

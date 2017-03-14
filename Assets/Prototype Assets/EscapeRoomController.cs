@@ -16,6 +16,8 @@ namespace Assets.Prototype_Assets
         private bool player3Registered = false;
         private bool player4Registered = false;
 
+        private PlayerController playerController;
+
         public override void OnStartServer()
         {
             // Starts a server to listen for movement commands if this client is the host
@@ -36,9 +38,20 @@ namespace Assets.Prototype_Assets
 
                 Server.ServerPacketObserver.AddObserver((int)PacketType.MOVE, submove.MoveSub);
                 Server.ServerPacketObserver.AddObserver((int)PacketType.ENDMOVE, submove.EndMoveSub);
+                Server.ServerPacketObserver.AddObserver((int)PacketType.SHAKE, EnableShake);
 
                 StartCoroutine(CheckClientsAlive());
             }
+        }
+
+        private void EnableShake(Packet p)
+        {
+            if (playerController == null)
+            {
+                playerController = FindObjectOfType<PlayerController>();
+            }
+
+            playerController.EnableShake(p);
         }
 
         // Ensure we stop the server when the application ends
@@ -196,6 +209,8 @@ namespace Assets.Prototype_Assets
         {
             Packet pack = new Packet((int)PacketType.ESCAPESTARTED, PacketType.ESCAPESTARTED.ToString());
 
+
+            Debug.Log("Sending game started to " + Server.udpClients.Count + " clients!");
             for (int i = 0; i < Server.udpClients.Count; i++)
             {
                 Server.udpClients[i].SendPacket(pack);

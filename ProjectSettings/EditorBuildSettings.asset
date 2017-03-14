@@ -12,12 +12,16 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Controls.unity
   - enabled: 0
-    path: Assets/Scenes/Debug/WebcamDebug.unity
-  - enabled: 0
     path: Assets/Scenes/QRScanner.unity
+  - enabled: 0
+    path: Assets/Scenes/Debug/WebcamDebug.unity
   - enabled: 1
     path: Assets/Scenes/StartScene.unity
   - enabled: 0
     path: Assets/Scenes/Sonar.unity
   - enabled: 1
     path: Assets/Scenes/Diagnostics.unity
+  - enabled: 0
+    path: Assets/CodeLevel.unity
+  - enabled: 0
+    path: Assets/Menu.unity

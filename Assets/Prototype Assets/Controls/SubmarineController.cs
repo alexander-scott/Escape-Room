@@ -16,7 +16,7 @@ namespace Assets.Prototype_Assets
         {
             // MOVED TO MENUBUTTONS.CS
             //NetworkLib.Client.connect(GlobalVariables.ipAddress, LibProtocolType.UDP);
-
+            
             moveText.text = ((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString();
 
             switch ((GlobalVariables.Direction)GlobalVariables.playerNumber)
