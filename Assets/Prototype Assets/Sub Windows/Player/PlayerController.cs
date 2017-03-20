@@ -23,6 +23,9 @@ namespace Assets.Prototype_Assets
         public Camera cam;
         private GameObject Radarcam;
         int activeCamera = 0;
+        public Vector3 whaleEndPos;
+        private bool whaleIsLeaving = false;
+        private bool whaleIsApproaching = true;
 
         //how far the window is away from the sub
         const float kWindowOffset = 5.0f;
@@ -44,12 +47,20 @@ namespace Assets.Prototype_Assets
         private float defaultFogDensity;
         private Material defaultSkybox;
         private Material noSkybox;
+        public float minWhaleSpeed;
+        private float whaleSpeed;
+        public float maxWhaleSpeed;
 
         public void Start()
         {
             shaking = false;
             shakeDecay = 0.02f;
             shakeIntensity = 0.2f;
+            minWhaleSpeed = 1.0f;
+            whaleSpeed = minWhaleSpeed;
+            maxWhaleSpeed = 10.0f;
+            whaleEndPos = new Vector3(-50.0f, -20.0f, 0.0f);
+
 
             debugFloat = 0.0f;
             //originRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
@@ -102,31 +113,13 @@ namespace Assets.Prototype_Assets
                 RenderSettings.skybox = defaultSkybox;
             }
 
-            if (isServer && GlobalVariables.escapeState != GlobalVariables.EscapeState.WaitingToStart)
+            if (isServer && GlobalVariables.CheckProgression(GlobalVariables.EscapeState.EscapeStarted))
             {
                 if (mSubmarine.transform.position.y <= groundLevel)
                 {
                     //Stop decsent
-                    
-                    //WHALE COMING IN BRO
-                    mWhale.transform.LookAt(mSubmarine.transform.position);
-                    mWhale.transform.Rotate(0.0f, 180.0f, 0.0f);
-
-                    Vector3 tar = new Vector3(mSubmarine.transform.position.x + 5.0f, mSubmarine.transform.position.y + 1.0f, mSubmarine.transform.position.z);
-                    mWhale.transform.position = Vector3.MoveTowards(mWhale.transform.position, tar, 5.0f * Time.deltaTime);
-
-                    if (mWhale.transform.position == tar)
-                    {
-                        //@TODO Change this to only happen once.
-                        Packet p = new Packet((int)PacketType.SHAKE, "Server");
-
-                        for (int i = 0; i < Server.udpClients.Count; i++)
-                        {
-                            Server.udpClients[i].SendPacket(p);
-                        }
-                    }
+                    HandleWhaleMovement();
                 }
-
 
                 if (mSubmarine.transform.position.y > groundLevel)
                 {
@@ -215,6 +208,57 @@ namespace Assets.Prototype_Assets
             shakeIntensity -= shakeDecay;
         }
 
+        private void HandleWhaleMovement()
+        {
+            Vector3 tar = new Vector3(mSubmarine.transform.position.x + 5.0f, mSubmarine.transform.position.y + 1.0f, mSubmarine.transform.position.z);
+
+            if (whaleIsApproaching)
+            {
+                whaleSpeed += 0.1f;
+                if(whaleSpeed > maxWhaleSpeed)
+                {
+                    whaleSpeed = maxWhaleSpeed;
+                }
+
+                            mWhale.transform.LookAt(mSubmarine.transform.position);
+                mWhale.transform.Rotate(0.0f, 180.0f, 0.0f);
+
+                mWhale.transform.position = Vector3.MoveTowards(mWhale.transform.position, tar, whaleSpeed * Time.deltaTime);
+            }
+            if (mWhale.transform.position == tar)
+            {
+                SendCameraShakePacket();
+                whaleIsLeaving = true;
+                whaleIsApproaching = false;
+                whaleSpeed = minWhaleSpeed;
+            }
+
+            if (whaleIsLeaving)
+            {
+                SendWhaleAway();
+            }
+        }
+
+        private void SendCameraShakePacket()
+        {
+            //@TODO Change this to only happen once.
+            Packet p = new Packet((int)PacketType.SHAKE, "Server");
+
+            for (int i = 0; i < Server.udpClients.Count; i++)
+            {
+                Server.udpClients[i].SendPacket(p);
+            }
+        }
+
+        private void SendWhaleAway()
+        {
+            mWhale.transform.position = Vector3.MoveTowards(mWhale.transform.position, whaleEndPos, whaleSpeed * Time.deltaTime);
+            if (mWhale.transform.position == whaleEndPos)
+            {
+                Destroy(mWhale);
+            }
+        }
+
         private void ShakeAtInterval()
         {
             if (shaking)
@@ -259,12 +303,12 @@ namespace Assets.Prototype_Assets
             if (isLocalPlayer)
                 GUI.Label(textArea, debugText);
 
-            if (GlobalVariables.escapeState == GlobalVariables.EscapeState.WaitingToStart)
-            {
-                var centeredStyle = GUI.skin.GetStyle("Label");
-                centeredStyle.alignment = TextAnchor.UpperCenter;
-                GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 25, 100, 50), "Waiting for escape to start", centeredStyle);
-            }
+            //if (GlobalVariables.escapeState == GlobalVariables.EscapeState.WaitingToStart)
+            //{
+            //    var centeredStyle = GUI.skin.GetStyle("Label");
+            //    centeredStyle.alignment = TextAnchor.UpperCenter;
+            //    GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 25, 100, 50), "Waiting for escape to start", centeredStyle);
+            //}
 
             GUI.Label(textArea2, debugText2);
         }

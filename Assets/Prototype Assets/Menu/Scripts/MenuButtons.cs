@@ -47,6 +47,8 @@ namespace Assets.Prototype_Assets
                 connectButtonText.text = "Disconnect";
                 controlsButton.gameObject.GetComponent<Image>().color = Color.green;
                 dropDownList.enabled = false;
+                clientCreated = true;
+                AddPacketObservers();
             }
             else
             {
@@ -115,10 +117,6 @@ namespace Assets.Prototype_Assets
 
                 NetworkLib.Client.stop();
             }
-            else
-            {
-                DontDestroyOnLoad(this); // Don't end the client if we're registered. Keep it alive so the sub controls can send packets.
-            }
         }
 
         private void ConnectButtonClicked()
@@ -166,8 +164,9 @@ namespace Assets.Prototype_Assets
         private void AddPacketObservers()
         {
             NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.PlayerTryRegisterResult, PlayerTryRegisterResult);
-            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.UpdateEscapeState, UpdateEscapeState);
+            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.UpdateAllEscapeStatesOnClients, UpdateEscapeState);
             NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.CheckClientAlive, CheckClientAlive);
+            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.UpdateSingleEscapeStateOnClients, UpdateSingleEscapeState);
         }
 
         private void CheckClientAlive(Packet p)
@@ -208,20 +207,20 @@ namespace Assets.Prototype_Assets
 
         private void UpdateEscapeState(Packet p)
         {
-            // Get the current escape state
-            GlobalVariables.escapeState = (GlobalVariables.EscapeState)Enum.Parse(typeof(GlobalVariables.EscapeState), p.generalData[0].ToString());
+            int escapeStatesCount = Enum.GetNames(typeof(GlobalVariables.EscapeState)).Length;
 
-            // If this is false that means the game has PROGRESSED to this state. Rather than being a response from a client asking the server what state it is.
-            // Execute logic based on what should be done at this state.
-            if (!bool.Parse(p.generalData[1].ToString()))
+            for (int i = 0; i < escapeStatesCount; i++)
             {
-                switch (GlobalVariables.escapeState)
-                {
-                    case GlobalVariables.EscapeState.SubDescending:
-                        // SUB IS NOW DESCENDING
-                        break;
-                }
+                GlobalVariables.UpdateProgression((GlobalVariables.EscapeState)i, bool.Parse(p.generalData[i].ToString()));
             }
+        }
+
+        private void UpdateSingleEscapeState(Packet p)
+        {
+            GlobalVariables.EscapeState escapeState = (GlobalVariables.EscapeState)Enum.Parse(typeof(GlobalVariables.EscapeState), p.generalData[0].ToString());
+            bool progression = bool.Parse(p.generalData[1].ToString());
+
+            GlobalVariables.UpdateProgression(escapeState, progression);
         }
 
         #region Button click events
@@ -235,6 +234,8 @@ namespace Assets.Prototype_Assets
                 Client.SendPacket(p);
 
                 NetworkLib.Client.stop();
+
+                GlobalVariables.mobilePlayerRegistered = false;
             }
 
             SceneManager.LoadScene("Test");
@@ -242,11 +243,11 @@ namespace Assets.Prototype_Assets
 
         private void ControlsButtonClicked()
         {
-            if (GlobalVariables.mobilePlayerRegistered && GlobalVariables.escapeState != GlobalVariables.EscapeState.WaitingToStart)
+            if (GlobalVariables.mobilePlayerRegistered && GlobalVariables.CheckProgression(GlobalVariables.EscapeState.EscapeStarted))
             {
                 SceneManager.LoadScene("Controls");
             }
-            else if (GlobalVariables.mobilePlayerRegistered && GlobalVariables.escapeState == GlobalVariables.EscapeState.WaitingToStart)
+            else if (GlobalVariables.mobilePlayerRegistered && !GlobalVariables.CheckProgression(GlobalVariables.EscapeState.EscapeStarted))
             {
                 infoText.text = "Please start the game first!";
             }

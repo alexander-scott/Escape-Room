@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using System;
+using UnityEngine.UI;
 
 namespace Assets.Prototype_Assets
 {
@@ -49,6 +50,7 @@ namespace Assets.Prototype_Assets
                 Server.ServerPacketObserver.AddObserver((int)PacketType.PlayerUnRegister, PlayerUnRegister);
                 Server.ServerPacketObserver.AddObserver((int)PacketType.CheckEscapeState, CheckEscapeState);
                 Server.ServerPacketObserver.AddObserver((int)PacketType.ESCAPESTARTED, EscapeStarted);
+                Server.ServerPacketObserver.AddObserver((int)PacketType.UpdateSingleEscapeStateOnServer, UpdateSingleEscapeStateOnServer);
 
                 // THIS IS A SHIT WAY TO DO THIS - GET A REFERENCE
                 SubMove submove = FindObjectOfType<SubMove>();
@@ -78,8 +80,7 @@ namespace Assets.Prototype_Assets
             {
                 NetworkLib.Server.stop();
             }
-            
-            if (isClient)
+            else
             {
                 NetworkLib.Client.stop();
             }
@@ -87,13 +88,31 @@ namespace Assets.Prototype_Assets
 
         #region Escape state sync
 
+        // Allows you to update a single escape state on the server and clients
+        public void UpdateSingleEscapeStateOnClients(GlobalVariables.EscapeState escapeState, bool progression)
+        {
+            GlobalVariables.UpdateProgression(escapeState, progression);
+
+            Packet pack = new Packet((int)PacketType.UpdateSingleEscapeStateOnClients, PacketType.UpdateSingleEscapeStateOnClients.ToString());
+            pack.generalData.Add(escapeState);
+            pack.generalData.Add(progression);
+
+            for (int i = 0; i < Server.udpClients.Count; i++)
+            {
+                Server.udpClients[i].SendPacket(pack);
+            }
+        }
+
         // Sends a message to all clients telling them what the new escape state is. Call this if you need to update the game state. Leave clientCalled false.
         // PacketType = UpdateEscapeState
-        public void UpdateEscapeState(GlobalVariables.EscapeState escapeState, bool clientCalled = false)
+        private void UpdateEscapeStateOnClients()
         {
-            Packet pack = new Packet((int)PacketType.UpdateEscapeState, PacketType.UpdateEscapeState.ToString());
-            pack.generalData.Add(escapeState);
-            pack.generalData.Add(clientCalled);
+            Packet pack = new Packet((int)PacketType.UpdateAllEscapeStatesOnClients, PacketType.UpdateAllEscapeStatesOnClients.ToString());
+
+            for (int i = 0; i < Enum.GetNames(typeof(GlobalVariables.EscapeState)).Length; i++)
+            {
+                pack.generalData.Add(GlobalVariables.CheckProgression((GlobalVariables.EscapeState)i));
+            }
 
             for (int i = 0; i < Server.udpClients.Count; i++)
             {
@@ -105,16 +124,39 @@ namespace Assets.Prototype_Assets
         // PacketType = EscapeStartRequest
         private void CheckEscapeState(Packet p)
         {
-            UpdateEscapeState(GlobalVariables.escapeState, true);
+            UpdateEscapeStateOnClients();
         }
 
         // This is called when the start button is pressed on the iPad
         // PacketType = ESCAPESTARTED
         private void EscapeStarted(Packet p)
         {
-            GlobalVariables.escapeState = GlobalVariables.EscapeState.SubDescending;
+            GlobalVariables.UpdateProgression(GlobalVariables.EscapeState.EscapeStarted, true);
 
-            UpdateEscapeState(GlobalVariables.escapeState);
+            UpdateEscapeStateOnClients();
+        }
+
+        // Allows clients to update escape states on the server and all other clients.
+        // PacketType = UpdateSingleEscapeStateOnServer
+        private void UpdateSingleEscapeStateOnServer(Packet p)
+        {
+            GlobalVariables.EscapeState escapeState = (GlobalVariables.EscapeState)Enum.Parse(typeof(GlobalVariables.EscapeState), p.generalData[0].ToString());
+            bool progression = bool.Parse(p.generalData[1].ToString());
+
+            GlobalVariables.UpdateProgression(escapeState, progression);
+
+            UpdateEscapeStateOnClients();
+
+            switch(escapeState)
+            {
+                case GlobalVariables.EscapeState.EscapeStarted:
+
+                    break;
+
+                case GlobalVariables.EscapeState.KeypadCodeEntered:
+                    Debug.Log("KeypadCoDeEntered");
+                    break;
+            }
         }
 
         #endregion

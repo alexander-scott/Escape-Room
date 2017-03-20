@@ -34,7 +34,7 @@ namespace Assets.Prototype_Assets
 
             NetworkLib.Client.stop();
 
-            SceneManager.LoadScene("Diagnostics");
+            SceneManager.LoadScene("Keypad");
         }
     }
 }

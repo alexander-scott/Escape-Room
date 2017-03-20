@@ -1211,8 +1211,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 986643565}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 489.44907, y: -242.67891, z: -2147.4966}
+  m_LocalRotation: {x: 0.004010855, y: -0.28747854, z: 0.001203356, w: 0.9577779}
+  m_LocalPosition: {x: 45.235596, y: 24.57634, z: -49.43045}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1227,7 +1227,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 400050, guid: 087a2ac1c75bbc34aa1d66d7766c1d5b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 45
+      value: 54.38
       objectReference: {fileID: 0}
     - target: {fileID: 400050, guid: 087a2ac1c75bbc34aa1d66d7766c1d5b, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2048,7 +2048,6 @@ GameObject:
   - component: {fileID: 1385915511}
   - component: {fileID: 1385915510}
   - component: {fileID: 1385915512}
-  - component: {fileID: 1385915514}
   - component: {fileID: 1385915513}
   - component: {fileID: 1385915515}
   m_Layer: 0
@@ -2104,20 +2103,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9c16746acf62a57439f491244eb61a08, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startSessionBtn: {fileID: 1598619111}
-  joinSessionBtn: {fileID: 233458884}
-  canvas: {fileID: 1357718850}
---- !u!114 &1385915514
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1385915509}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -822479833, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_NetworkPort: 7777
@@ -2178,6 +2163,9 @@ MonoBehaviour:
   matchSize: 4
   isNetworkActive: 0
   matchMaker: {fileID: 0}
+  startSessionBtn: {fileID: 1598619111}
+  joinSessionBtn: {fileID: 233458884}
+  canvas: {fileID: 1357718850}
 --- !u!114 &1385915515
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2515,6 +2503,15 @@ Prefab:
     - target: {fileID: 1253141020590012, guid: 8af15ddc5ec32e342974159d6440ce85, type: 2}
       propertyPath: m_Name
       value: ProjectorHolderForCaustics
+      objectReference: {fileID: 0}
+    - target: {fileID: 4251691802429498, guid: 8af15ddc5ec32e342974159d6440ce85, type: 2}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 119663027817390426, guid: 8af15ddc5ec32e342974159d6440ce85,
+        type: 2}
+      propertyPath: m_FarClipPlane
+      value: 100
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 8af15ddc5ec32e342974159d6440ce85, type: 2}
