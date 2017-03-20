@@ -7,6 +7,9 @@ TagManager:
   - Submarine
   - enemy
   - Whale
+  - RadarCamera
+  - Preview Camera
+  - reflectioncamera
   layers:
   - Default
   - TransparentFX

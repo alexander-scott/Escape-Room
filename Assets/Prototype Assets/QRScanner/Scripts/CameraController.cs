@@ -109,6 +109,18 @@ namespace Assets.Prototype_Assets
                 activeCameraDevice.isFrontFacing ? fixedScale : defaultScale;
         }
 
+        void OnApplicationQuit()
+        {
+            if (GlobalVariables.mobilePlayerRegistered)
+            {
+                Packet p = new Packet((int)PacketType.PlayerUnRegister, ((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString());
+                p.generalData.Add(((GlobalVariables.Direction)GlobalVariables.playerNumber));
+                Client.SendPacket(p);
+
+                NetworkLib.Client.stop();
+            }
+        }
+
         public void ScanSuccess(string result)
         {
             infoText.text = result;

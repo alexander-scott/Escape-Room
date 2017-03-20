@@ -9,7 +9,25 @@ namespace Assets.Prototype_Assets
 {
     public class EscapeRoomController : NetworkBehaviour
     {
-        private GlobalVariables.EscapeState escapeState;
+        #region Singleton
+
+        private static EscapeRoomController _instance;
+
+        public static EscapeRoomController Instance { get { return _instance; } }
+
+        private void Awake()
+        {
+            if (_instance != null && _instance != this)
+            {
+                Destroy(this.gameObject);
+            }
+            else
+            {
+                _instance = this;
+            }
+        }
+
+        #endregion
 
         private bool player1Registered = false;
         private bool player2Registered = false;
@@ -29,9 +47,8 @@ namespace Assets.Prototype_Assets
                 Server.ServerPacketObserver.AddObserver((int)PacketType.PlayerTryRegister, PlayerTryRegister);
                 Server.ServerPacketObserver.AddObserver((int)PacketType.PlayerRegister, PlayerRegister);
                 Server.ServerPacketObserver.AddObserver((int)PacketType.PlayerUnRegister, PlayerUnRegister);
-                Server.ServerPacketObserver.AddObserver((int)PacketType.EscapeStartRequest, CheckEscapeStart);
+                Server.ServerPacketObserver.AddObserver((int)PacketType.CheckEscapeState, CheckEscapeState);
                 Server.ServerPacketObserver.AddObserver((int)PacketType.ESCAPESTARTED, EscapeStarted);
-                Server.ServerPacketObserver.AddObserver((int)PacketType.CheckEscapeStart, CheckEscapeStart);
 
                 // THIS IS A SHIT WAY TO DO THIS - GET A REFERENCE
                 SubMove submove = FindObjectOfType<SubMove>();
@@ -55,27 +72,54 @@ namespace Assets.Prototype_Assets
         }
 
         // Ensure we stop the server when the application ends
-        void OnApplicationQuit()
+        private void OnApplicationQuit()
         {
-            NetworkLib.Server.stop();
+            if (isServer)
+            {
+                NetworkLib.Server.stop();
+            }
+            
+            if (isClient)
+            {
+                NetworkLib.Client.stop();
+            }
         }
 
-        // This is called when a client asks the server if the game has started yet. It returns true or false to all clients. 
+        #region Escape state sync
+
+        // Sends a message to all clients telling them what the new escape state is. Call this if you need to update the game state. Leave clientCalled false.
+        // PacketType = UpdateEscapeState
+        public void UpdateEscapeState(GlobalVariables.EscapeState escapeState, bool clientCalled = false)
+        {
+            Packet pack = new Packet((int)PacketType.UpdateEscapeState, PacketType.UpdateEscapeState.ToString());
+            pack.generalData.Add(escapeState);
+            pack.generalData.Add(clientCalled);
+
+            for (int i = 0; i < Server.udpClients.Count; i++)
+            {
+                Server.udpClients[i].SendPacket(pack);
+            }
+        }
+
+        // This is called when a client asks the server what the current escape state is. It returns the current escape state to all clients.
         // PacketType = EscapeStartRequest
-        private void CheckEscapeStart(Packet p)
+        private void CheckEscapeState(Packet p)
         {
-            SendCheckGameStartResponse();
+            UpdateEscapeState(GlobalVariables.escapeState, true);
         }
 
-        // This is called when the start button is pressed on the iPad. Sets escapeStarted to true. Tells all clients the escape has started.
+        // This is called when the start button is pressed on the iPad
         // PacketType = ESCAPESTARTED
         private void EscapeStarted(Packet p)
         {
-            GlobalVariables.escapeStarted = true;
-            Debug.Log("GAME STARTED");
+            GlobalVariables.escapeState = GlobalVariables.EscapeState.SubDescending;
 
-            SendGameStart();
+            UpdateEscapeState(GlobalVariables.escapeState);
         }
+
+        #endregion
+
+        #region Player registration
 
         // This is called when a client presses disconnect on their mobile phone. Sets a specific bool to false.
         // PacketType = PlayerUnRegister
@@ -204,31 +248,9 @@ namespace Assets.Prototype_Assets
             }
         }
 
-        // Sends a message to all clients telling them that the escape has started
-        private void SendGameStart()
-        {
-            Packet pack = new Packet((int)PacketType.ESCAPESTARTED, PacketType.ESCAPESTARTED.ToString());
+        #endregion
 
-
-            Debug.Log("Sending game started to " + Server.udpClients.Count + " clients!");
-            for (int i = 0; i < Server.udpClients.Count; i++)
-            {
-                Server.udpClients[i].SendPacket(pack);
-            }
-        }
-
-        // Sends a message to all clients telling them if the escape has started or hasn't started.
-        private void SendCheckGameStartResponse()
-        {
-            Packet pack = new Packet((int)PacketType.CheckEscapeStartResponse, PacketType.CheckEscapeStartResponse.ToString());
-            pack.generalData.Add(GlobalVariables.escapeStarted);
-
-            for (int i = 0; i < Server.udpClients.Count; i++)
-            {
-                Server.udpClients[i].SendPacket(pack);
-            }
-        }
-
+        // This coroutine constantly sends tiny packets to clients telling them that the server is still alive
         private IEnumerator CheckClientsAlive()
         {
             Packet pack = new Packet((int)PacketType.CheckClientAlive, PacketType.CheckClientAlive.ToString());

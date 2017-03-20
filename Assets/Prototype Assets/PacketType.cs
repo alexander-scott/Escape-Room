@@ -15,12 +15,10 @@ namespace Assets.Prototype_Assets
         PlayerTryRegisterResult,
         PlayerRegister,
         PlayerUnRegister,
-        ESCAPEPROGRESS,
-        EscapeStartRequest,
-        CheckEscapeStart,
-        CheckEscapeStartResponse,
-        CheckClientAlive,
         ESCAPESTARTED,
+        UpdateEscapeState,
+        CheckEscapeState,
+        CheckClientAlive,
         SHAKE,
     };
 }

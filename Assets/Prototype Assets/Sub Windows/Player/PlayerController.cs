@@ -21,9 +21,8 @@ namespace Assets.Prototype_Assets
         Rect textArea = new Rect(10, 10, Screen.width, Screen.height);
         Rect textArea2 = new Rect(10, 20, Screen.width, Screen.height);
         public Camera cam;
-        private Camera[] radarCams;
+        private GameObject Radarcam;
         int activeCamera = 0;
-        public RadarSubV2 radv2 = new RadarSubV2();
 
         //how far the window is away from the sub
         const float kWindowOffset = 5.0f;
@@ -55,9 +54,7 @@ namespace Assets.Prototype_Assets
             debugFloat = 0.0f;
             //originRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
 
-            radarCams = Camera.allCameras;
-            radarCams[2].gameObject.SetActive(false);
-            
+
             defaultFog = RenderSettings.fog;
             defaultFogColour = RenderSettings.fogColor;
             defaultFogDensity = RenderSettings.fogDensity;
@@ -71,6 +68,9 @@ namespace Assets.Prototype_Assets
 
             //find the whale
             mWhale = GameObject.FindGameObjectWithTag("Whale");
+
+            //Find the radar camera
+            Radarcam = GameObject.FindGameObjectWithTag("RadarCamera");
 
             //init to North Camera
             this.transform.position = new Vector3(mSubmarine.transform.position.x + 5, mSubmarine.transform.position.y, mSubmarine.transform.position.z);
@@ -102,7 +102,7 @@ namespace Assets.Prototype_Assets
                 RenderSettings.skybox = defaultSkybox;
             }
 
-            if (isServer && GlobalVariables.escapeStarted)
+            if (isServer && GlobalVariables.escapeState != GlobalVariables.EscapeState.WaitingToStart)
             {
                 if (mSubmarine.transform.position.y <= groundLevel)
                 {
@@ -149,6 +149,7 @@ namespace Assets.Prototype_Assets
             {
                 //North facing camera
                 case 0:
+                    Radarcam.SetActive(false);
                     Quaternion northRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
                     Vector3 northPos = new Vector3(mSubmarine.transform.position.x + kWindowOffset, mSubmarine.transform.position.y, mSubmarine.transform.position.z);
                     this.transform.position = northPos;
@@ -158,6 +159,7 @@ namespace Assets.Prototype_Assets
                     break;
                 //East facing camera
                 case 1:
+                    Radarcam.SetActive(false);
                     Quaternion eastRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y - 90.0f, mSubmarine.transform.rotation.z);
                     Vector3 eastPos = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z - kWindowOffset);
                     this.transform.rotation = eastRot;
@@ -167,28 +169,30 @@ namespace Assets.Prototype_Assets
                     break;
                 //South facing camera
                 case 2:
+                    Radarcam.SetActive(false);
                     Quaternion southRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y, mSubmarine.transform.rotation.z);
                     Vector3 southPos = new Vector3(mSubmarine.transform.position.x - (2 * kWindowOffset), mSubmarine.transform.position.y, mSubmarine.transform.position.z);
                     this.transform.position = southPos;
                     this.transform.rotation = southRot;
                     ShakeAtInterval();
                     debugText = "Camera South";
+       
                     break;
                 //West facing camera
                 case 3:
+                    Radarcam.SetActive(false);
                     Quaternion westRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 90.0f, mSubmarine.transform.rotation.z);
                     Vector3 westPos = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z + kWindowOffset);
                     this.transform.position = westPos;
                     this.transform.rotation = westRot;
                     ShakeAtInterval();
                     debugText = "Camera West";
+
                     break;
                 //RadarCamera
                 case 4:
                     debugText = "Camera Radar";
-                    radarCams[2].gameObject.SetActive(true);
-                    radarCams[1].gameObject.SetActive(false);
-                    //radarCams[0].gameObject.SetActive(false);
+                    Radarcam.SetActive(true);
                     break;
             }
             //SwitchCamera();
@@ -255,7 +259,7 @@ namespace Assets.Prototype_Assets
             if (isLocalPlayer)
                 GUI.Label(textArea, debugText);
 
-            if (!GlobalVariables.escapeStarted)
+            if (GlobalVariables.escapeState == GlobalVariables.EscapeState.WaitingToStart)
             {
                 var centeredStyle = GUI.skin.GetStyle("Label");
                 centeredStyle.alignment = TextAnchor.UpperCenter;

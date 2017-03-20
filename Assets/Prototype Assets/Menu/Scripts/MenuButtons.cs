@@ -41,7 +41,7 @@ namespace Assets.Prototype_Assets
 
             connectButtonText = connectButton.GetComponentInChildren<Text>();
 
-            // If we're returing to this scene from the sub controls then the play might still be registered
+            // If we're returing to this scene from the sub controls then the player might still be registered
             if (GlobalVariables.mobilePlayerRegistered)
             {
                 connectButtonText.text = "Disconnect";
@@ -108,6 +108,7 @@ namespace Assets.Prototype_Assets
         {
             if (GlobalVariables.mobilePlayerRegistered)
             {
+                // Deregister our player
                 Packet p = new Packet((int)PacketType.PlayerUnRegister, ((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString());
                 p.generalData.Add(((GlobalVariables.Direction)GlobalVariables.playerNumber));
                 Client.SendPacket(p);
@@ -165,14 +166,18 @@ namespace Assets.Prototype_Assets
         private void AddPacketObservers()
         {
             NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.PlayerTryRegisterResult, PlayerTryRegisterResult);
-            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.ESCAPESTARTED, EscapeStarted);
-            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.CheckEscapeStartResponse, CheckEscapeStartResponse);
+            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.UpdateEscapeState, UpdateEscapeState);
             NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.CheckClientAlive, CheckClientAlive);
+        }
+
+        private void CheckClientAlive(Packet p)
+        {
+            connectionTimer = 0f;
         }
 
         private void PlayerTryRegisterResult(Packet p)
         {
-            if (awaitingResponse)
+            if (awaitingResponse) // Only enter this if we are expecting this packet. It may be destined for another client.
             {
                 awaitingResponse = false;
                 updateUI = true;
@@ -185,7 +190,7 @@ namespace Assets.Prototype_Assets
 
                     GlobalVariables.mobilePlayerRegistered = true;
 
-                    CheckEscapeStart();
+                    CheckEscapeState();
                 }
                 else // It is already taken
                 {
@@ -195,38 +200,53 @@ namespace Assets.Prototype_Assets
         }
 
         // Asks the server if the escape has started yet
-        private void CheckEscapeStart()
+        private void CheckEscapeState()
         {
-            Packet p = new Packet((int)PacketType.CheckEscapeStart, PacketType.CheckEscapeStart.ToString());
+            Packet p = new Packet((int)PacketType.CheckEscapeState, PacketType.CheckEscapeState.ToString());
             Client.SendPacket(p);
         }
 
-        // This is the response from the server telling us if the game has started or not
-        private void CheckEscapeStartResponse(Packet p)
+        private void UpdateEscapeState(Packet p)
         {
-            if (bool.Parse(p.generalData[0].ToString())) // Game has started
+            // Get the current escape state
+            GlobalVariables.escapeState = (GlobalVariables.EscapeState)Enum.Parse(typeof(GlobalVariables.EscapeState), p.generalData[0].ToString());
+
+            // If this is false that means the game has PROGRESSED to this state. Rather than being a response from a client asking the server what state it is.
+            // Execute logic based on what should be done at this state.
+            if (!bool.Parse(p.generalData[1].ToString()))
             {
-                GlobalVariables.escapeStarted = true;
+                switch (GlobalVariables.escapeState)
+                {
+                    case GlobalVariables.EscapeState.SubDescending:
+                        // SUB IS NOW DESCENDING
+                        break;
+                }
             }
         }
 
-        private void EscapeStarted(Packet p)
-        {
-            GlobalVariables.escapeStarted = true;
-        }
+        #region Button click events
 
         private void SubButtonClicked()
         {
+            if (GlobalVariables.mobilePlayerRegistered)
+            {
+                Packet p = new Packet((int)PacketType.PlayerUnRegister, ((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString());
+                p.generalData.Add(((GlobalVariables.Direction)GlobalVariables.playerNumber));
+                Client.SendPacket(p);
+
+                NetworkLib.Client.stop();
+            }
+
             SceneManager.LoadScene("Test");
         }
 
         private void ControlsButtonClicked()
         {
-            if (GlobalVariables.mobilePlayerRegistered && GlobalVariables.escapeStarted)
+            if (GlobalVariables.mobilePlayerRegistered && GlobalVariables.escapeState != GlobalVariables.EscapeState.WaitingToStart)
             {
                 SceneManager.LoadScene("Controls");
             }
-            else if (GlobalVariables.mobilePlayerRegistered && !GlobalVariables.escapeStarted)
+            else if (GlobalVariables.mobilePlayerRegistered && GlobalVariables.escapeState == GlobalVariables.EscapeState.WaitingToStart)
             {
                 infoText.text = "Please start the game first!";
             }
@@ -241,11 +261,6 @@ namespace Assets.Prototype_Assets
             SceneManager.LoadScene("QRScanner");
         }
 
-        private void CheckClientAlive(Packet p)
-        {
-            connectionTimer = 0f;
-        }
-
         public void IPAddressChanged(string ipaddress)
         {
             GlobalVariables.ipAddress = ipaddress;
@@ -258,5 +273,7 @@ namespace Assets.Prototype_Assets
         {
             GlobalVariables.playerNumber = val;
         }
+
+        #endregion
     }
 }
