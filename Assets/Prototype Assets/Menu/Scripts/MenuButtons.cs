@@ -164,9 +164,9 @@ namespace Assets.Prototype_Assets
         private void AddPacketObservers()
         {
             NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.PlayerTryRegisterResult, PlayerTryRegisterResult);
-            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.UpdateAllEscapeStatesOnClients, UpdateEscapeState);
+            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.UpdateAllEscapeStatesOnClients, UpdateAllEscapeStatesFromServer);
             NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.CheckClientAlive, CheckClientAlive);
-            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.UpdateSingleEscapeStateOnClients, UpdateSingleEscapeState);
+            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.UpdateSingleEscapeStateOnClients, UpdateSingleEscapeStateFromServer);
         }
 
         private void CheckClientAlive(Packet p)
@@ -205,7 +205,7 @@ namespace Assets.Prototype_Assets
             Client.SendPacket(p);
         }
 
-        private void UpdateEscapeState(Packet p)
+        private void UpdateAllEscapeStatesFromServer(Packet p)
         {
             int escapeStatesCount = Enum.GetNames(typeof(GlobalVariables.EscapeState)).Length;
 
@@ -215,7 +215,7 @@ namespace Assets.Prototype_Assets
             }
         }
 
-        private void UpdateSingleEscapeState(Packet p)
+        private void UpdateSingleEscapeStateFromServer(Packet p)
         {
             GlobalVariables.EscapeState escapeState = (GlobalVariables.EscapeState)Enum.Parse(typeof(GlobalVariables.EscapeState), p.generalData[0].ToString());
             bool progression = bool.Parse(p.generalData[1].ToString());
@@ -246,6 +246,16 @@ namespace Assets.Prototype_Assets
             if (GlobalVariables.mobilePlayerRegistered && GlobalVariables.CheckProgression(GlobalVariables.EscapeState.EscapeStarted))
             {
                 SceneManager.LoadScene("Controls");
+
+                // If this is the first time we enter this scene update the escape state
+                if (!GlobalVariables.CheckProgression(GlobalVariables.EscapeState.SubControlsEnabled))
+                {
+                    Packet p = new Packet((int)PacketType.UpdateSingleEscapeStateOnServer, PacketType.UpdateSingleEscapeStateOnServer.ToString());
+                    p.generalData.Add(GlobalVariables.EscapeState.SubControlsEnabled);
+                    p.generalData.Add(true);
+
+                    Client.SendPacket(p);
+                }
             }
             else if (GlobalVariables.mobilePlayerRegistered && !GlobalVariables.CheckProgression(GlobalVariables.EscapeState.EscapeStarted))
             {

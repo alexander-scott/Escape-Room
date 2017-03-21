@@ -156,11 +156,7 @@ public class ConstrainMovementPlane : MonoBehaviour
         //Debug.Log("Controller 1 " + controller1Script.isGrabbing);
         //Debug.Log("Controller 2 " + controller2Script.isGrabbing);
 
-        if (isGrabbed)
-        {
-
-        }
-        else
+        if(!isGrabbed)
         {
 
             Vector3 tempPos2 = neutralSensor.GetComponent<Transform>().position;

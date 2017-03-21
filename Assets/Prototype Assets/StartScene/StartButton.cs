@@ -29,7 +29,10 @@ namespace Assets.Prototype_Assets
             // TODO: IF CONNECT FAILS TRY AGAIN IN A MOMENT
             NetworkLib.Client.connect(GlobalVariables.ipAddress, LibProtocolType.UDP);
 
-            Packet p = new Packet((int)PacketType.ESCAPESTARTED, PacketType.ESCAPESTARTED.ToString());
+            Packet p = new Packet((int)PacketType.UpdateSingleEscapeStateOnServer, PacketType.UpdateSingleEscapeStateOnServer.ToString());
+            p.generalData.Add(GlobalVariables.EscapeState.EscapeStarted);
+            p.generalData.Add(true);
+
             Client.SendPacket(p);
 
             NetworkLib.Client.stop();

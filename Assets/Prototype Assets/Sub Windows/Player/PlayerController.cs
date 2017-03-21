@@ -22,10 +22,13 @@ namespace Assets.Prototype_Assets
         Rect textArea2 = new Rect(10, 20, Screen.width, Screen.height);
         public Camera cam;
         private GameObject Radarcam;
+        private GameObject IPRadarcam;
         int activeCamera = 0;
         public Vector3 whaleEndPos;
         private bool whaleIsLeaving = false;
         private bool whaleIsApproaching = true;
+        private bool descentPacketSent = false;
+        private float descendSpeed = 1f;
 
         //how far the window is away from the sub
         const float kWindowOffset = 5.0f;
@@ -76,12 +79,15 @@ namespace Assets.Prototype_Assets
 
             //find sub in scene
             mSubmarine = GameObject.FindGameObjectWithTag("Submarine");
-
+ 
             //find the whale
             mWhale = GameObject.FindGameObjectWithTag("Whale");
 
             //Find the radar camera
             Radarcam = GameObject.FindGameObjectWithTag("RadarCamera");
+
+            //Find the ipad radar camera
+            IPRadarcam = GameObject.FindGameObjectWithTag("IPRadarCamera");
 
             //init to North Camera
             this.transform.position = new Vector3(mSubmarine.transform.position.x + 5, mSubmarine.transform.position.y, mSubmarine.transform.position.z);
@@ -89,6 +95,11 @@ namespace Assets.Prototype_Assets
             this.transform.rotation = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
             //this.transform.eulerAngles = new Vector3(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
             debugText = "Camera not setup";
+            if (!isServer)
+            {
+                Client.connect(GlobalVariables.ipAddress, LibProtocolType.UDP);
+                Client.ClientPacketObserver.AddObserver((int)PacketType.SHAKE, EnableShake);
+            }
 
             if (isLocalPlayer) return;
             cam.enabled = false;
@@ -117,8 +128,17 @@ namespace Assets.Prototype_Assets
             {
                 if (mSubmarine.transform.position.y <= groundLevel)
                 {
-                    //Stop decsent
+                    //descent has not stopped
                     HandleWhaleMovement();
+
+                    
+                    //happens only once
+                    if (isServer && !descentPacketSent)
+                    {
+                        descentPacketSent = true;
+                        GlobalVariables.UpdateProgression(GlobalVariables.EscapeState.SubDescended, true);
+                        EscapeRoomController.Instance.UpdateSingleEscapeStateOnClients(GlobalVariables.EscapeState.SubDescended, true);
+                    }
                 }
 
                 if (mSubmarine.transform.position.y > groundLevel)
@@ -126,7 +146,7 @@ namespace Assets.Prototype_Assets
                     //this.transform.position = new Vector3(this.transform.position.x, this.transform.position.y - 0.01f, this.transform.position.z);
 
                     Vector3 groundPos = new Vector3(mSubmarine.transform.position.x, -25.0f, mSubmarine.transform.position.z);
-                    mSubmarine.transform.position = Vector3.MoveTowards(mSubmarine.transform.position, groundPos, 10.0f * Time.deltaTime);
+                    mSubmarine.transform.position = Vector3.MoveTowards(mSubmarine.transform.position, groundPos, descendSpeed * Time.deltaTime);
 
                     Debug.Log("Decending");
                 }
@@ -142,6 +162,7 @@ namespace Assets.Prototype_Assets
             {
                 //North facing camera
                 case 0:
+                    IPRadarcam.SetActive(false);
                     Radarcam.SetActive(false);
                     Quaternion northRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
                     Vector3 northPos = new Vector3(mSubmarine.transform.position.x + kWindowOffset, mSubmarine.transform.position.y, mSubmarine.transform.position.z);
@@ -149,9 +170,11 @@ namespace Assets.Prototype_Assets
                     this.transform.rotation = northRot;
                     ShakeAtInterval();
                     debugText = "Camera North";
+                    GlobalVariables.IPRadar = false;
                     break;
                 //East facing camera
                 case 1:
+                    IPRadarcam.SetActive(false);
                     Radarcam.SetActive(false);
                     Quaternion eastRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y - 90.0f, mSubmarine.transform.rotation.z);
                     Vector3 eastPos = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z - kWindowOffset);
@@ -159,9 +182,11 @@ namespace Assets.Prototype_Assets
                     this.transform.position = eastPos;
                     ShakeAtInterval();
                     debugText = "Camera East";
+                    GlobalVariables.IPRadar = false;
                     break;
                 //South facing camera
                 case 2:
+                    IPRadarcam.SetActive(false);
                     Radarcam.SetActive(false);
                     Quaternion southRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y, mSubmarine.transform.rotation.z);
                     Vector3 southPos = new Vector3(mSubmarine.transform.position.x - (2 * kWindowOffset), mSubmarine.transform.position.y, mSubmarine.transform.position.z);
@@ -169,10 +194,11 @@ namespace Assets.Prototype_Assets
                     this.transform.rotation = southRot;
                     ShakeAtInterval();
                     debugText = "Camera South";
-       
+                    GlobalVariables.IPRadar = false;
                     break;
                 //West facing camera
                 case 3:
+                    IPRadarcam.SetActive(false);
                     Radarcam.SetActive(false);
                     Quaternion westRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 90.0f, mSubmarine.transform.rotation.z);
                     Vector3 westPos = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z + kWindowOffset);
@@ -180,15 +206,34 @@ namespace Assets.Prototype_Assets
                     this.transform.rotation = westRot;
                     ShakeAtInterval();
                     debugText = "Camera West";
-
+                    GlobalVariables.IPRadar = false;
                     break;
                 //RadarCamera
                 case 4:
                     debugText = "Camera Radar";
+                    IPRadarcam.SetActive(false);
                     Radarcam.SetActive(true);
+                    this.cam.gameObject.SetActive(false);
+                    GlobalVariables.IPRadar = false;
+                    break;
+                //IPAD Radar Camera
+                case 5:
+                    debugText = "Camera Radar";
+                    IPRadarcam.SetActive(true);
+                    this.cam.gameObject.SetActive(false);
+                    Radarcam.SetActive(false);
+                    GlobalVariables.IPRadar = false;
                     break;
             }
             //SwitchCamera();
+        }
+
+        public void OnApplicationQuit()
+        {
+            if (!isServer)
+            {
+                Client.stop();
+            }
         }
 
         private void CameraShake()
@@ -220,14 +265,21 @@ namespace Assets.Prototype_Assets
                     whaleSpeed = maxWhaleSpeed;
                 }
 
-                            mWhale.transform.LookAt(mSubmarine.transform.position);
+                mWhale.transform.LookAt(mSubmarine.transform.position);
                 mWhale.transform.Rotate(0.0f, 180.0f, 0.0f);
 
                 mWhale.transform.position = Vector3.MoveTowards(mWhale.transform.position, tar, whaleSpeed * Time.deltaTime);
             }
             if (mWhale.transform.position == tar)
             {
+                if (!GlobalVariables.CheckProgression(GlobalVariables.EscapeState.FuzesScattered))
+                {
+                    GlobalVariables.UpdateProgression(GlobalVariables.EscapeState.FuzesScattered, true);
+                    EscapeRoomController.Instance.UpdateSingleEscapeStateOnClients(GlobalVariables.EscapeState.FuzesScattered, true);
+                }
+                
                 SendCameraShakePacket();
+
                 whaleIsLeaving = true;
                 whaleIsApproaching = false;
                 whaleSpeed = minWhaleSpeed;

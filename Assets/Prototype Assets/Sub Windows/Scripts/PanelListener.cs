@@ -10,11 +10,11 @@ public class PanelListener : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         state = GetComponent<State>();
-	}
+    }
 	
 	// Update is called once per frame
 	void Update () {
-        if(state.getState() == State.cState.WindowSelection)
+        if (state.getState() == State.cState.WindowSelection)
         {
             panel.SetActive(true);
         } else

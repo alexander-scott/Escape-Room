@@ -1,10 +1,8 @@
 ﻿using NetworkLib;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using System;
-using UnityEngine.UI;
 
 namespace Assets.Prototype_Assets
 {
@@ -34,11 +32,14 @@ namespace Assets.Prototype_Assets
         private bool player2Registered = false;
         private bool player3Registered = false;
         private bool player4Registered = false;
+        private RPI.Metalberry rpi;
 
         private PlayerController playerController;
 
         public override void OnStartServer()
         {
+            rpi = new RPI.Metalberry();
+
             // Starts a server to listen for movement commands if this client is the host
             if (isServer)
             {
@@ -60,6 +61,7 @@ namespace Assets.Prototype_Assets
                 Server.ServerPacketObserver.AddObserver((int)PacketType.SHAKE, EnableShake);
 
                 StartCoroutine(CheckClientsAlive());
+               
             }
         }
 
@@ -150,11 +152,23 @@ namespace Assets.Prototype_Assets
             switch(escapeState)
             {
                 case GlobalVariables.EscapeState.EscapeStarted:
+                    rpi.Do(CMD.PLAY_COMPUTER_GREETING);
+                    break;
 
+                case GlobalVariables.EscapeState.SubControlsEnabled:
+                    rpi.Do(CMD.PLAY_S_CONTROL_BUTTON);
+                    break;
+
+                case GlobalVariables.EscapeState.FuzesScattered:
+                    rpi.Do(CMD.PLAY_FUSES_DISLODGED);
+                    break;
+
+                case GlobalVariables.EscapeState.SubDescended:
+                    rpi.Do(CMD.PLAY_OXYGEN_LVL_DECREASE);
                     break;
 
                 case GlobalVariables.EscapeState.KeypadCodeEntered:
-                    Debug.Log("KeypadCoDeEntered");
+                    rpi.Do(CMD.PLAY_DIAGNOSTICS_ONLINE);
                     break;
             }
         }

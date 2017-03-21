@@ -19,7 +19,11 @@ namespace Assets.Prototype_Assets
         {
             startSessionBtn.onClick.AddListener(StartSessionBtnClicked);
             joinSessionBtn.onClick.AddListener(JoinSessionBtnClicked);
-
+            
+            if (GlobalVariables.IPRadar == true)
+            {
+                JoinSessionBtnClicked();
+            }
         }
 
         private void StartSessionBtnClicked()
@@ -28,7 +32,7 @@ namespace Assets.Prototype_Assets
             canvas.enabled = false;
         }
 
-        private void JoinSessionBtnClicked()
+        public void JoinSessionBtnClicked()
         {
             NetworkManager.singleton.networkAddress = GlobalVariables.ipAddress;
             NetworkManager.singleton.networkPort = 7777;

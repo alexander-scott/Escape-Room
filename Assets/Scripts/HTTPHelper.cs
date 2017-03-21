@@ -14,6 +14,9 @@ public class HTTPHelper : MonoBehaviour
     public const string DEFAULT_HOST = "ec2-34-248-183-89.eu-west-1.compute.amazonaws.com";
     public const int DEFAULT_PORT = 8090;
 
+    public const string RASPBERRY_HOST = "169.254.15.108";
+    public const int RASPBERRY_PORT = 5000;
+
     public const string COMMAND_RESET_RIDDLE_PROGRESS = "riddleProgressReset";
     public const string COMMAND_GET_RIDDLE_PROGRESS = "riddleProgress";
     public const string COMMAND_UPDATE_RIDDLE_PROGRESS = "updateRiddleProgress";
@@ -24,7 +27,7 @@ public class HTTPHelper : MonoBehaviour
     public static string responseError = "";
     public static string responseData = "";
 
-    public static HTTPHelper Instance
+    public HTTPHelper Instance
     {
         get
         {
@@ -51,7 +54,7 @@ public class HTTPHelper : MonoBehaviour
         }
     }
 
-    private static string ConstructURL(string host, int port, string command, URLParam[] parameters)
+    private string ConstructURL(string host, int port, string command, URLParam[] parameters)
     {
         string url = host + ":" + port + "/" + command;
 
@@ -76,7 +79,7 @@ public class HTTPHelper : MonoBehaviour
         return url;
     }
 
-    public static void GetRequest(string host, int port, string command, URLParam[] parameters)
+    public void GetRequest(string host, int port, string command, URLParam[] parameters)
     {
         string url = ConstructURL(host, port, command, parameters);
 
@@ -86,7 +89,7 @@ public class HTTPHelper : MonoBehaviour
         Instance.StartCoroutine(WaitForRequest(www));
     }
 
-    static IEnumerator WaitForRequest(WWW www)
+    IEnumerator WaitForRequest(WWW www)
     {
         yield return www;
 

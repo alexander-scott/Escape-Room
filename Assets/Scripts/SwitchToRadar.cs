@@ -1,27 +1,36 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using NetworkLib;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 
-public class SwitchToRadar : MonoBehaviour {
-
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
-
-    void OnMouseUp()
+namespace Assets.Prototype_Assets
+{
+    public class SwitchToRadar : MonoBehaviour
     {
-        if(SceneManager.GetActiveScene().name == "CodeLevel")
-            SceneManager.LoadScene("RadarScreen");
-        else if(SceneManager.GetActiveScene().name == "RadarScreen")
-            SceneManager.LoadScene("CodeLevel");
 
+        // Use this for initialization
+        void Start()
+        {
 
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
+        }
+
+        void OnMouseUp()
+        {
+            if (SceneManager.GetActiveScene().name == "CodeLevel")
+            {
+                SceneManager.LoadScene("Test");
+                GlobalVariables.playerNumber = 5;
+                GlobalVariables.IPRadar = true;
+            }
+        }
     }
 }

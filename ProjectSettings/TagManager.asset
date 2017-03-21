@@ -10,6 +10,7 @@ TagManager:
   - RadarCamera
   - Preview Camera
   - reflectioncamera
+  - IPRadarCamera
   layers:
   - Default
   - TransparentFX
@@ -23,7 +24,7 @@ TagManager:
   - 
   - Invisible
   - Radar
-  - 
+  - IpRadar
   - 
   - 
   - 

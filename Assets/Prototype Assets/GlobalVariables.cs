@@ -9,11 +9,12 @@ namespace Assets.Prototype_Assets
         public static string ipAddress = PlayerPrefs.GetString("IPAddress", "127.0.0.1");
         public static int playerNumber = 0;
         public static bool mobilePlayerRegistered = false;
+        public static bool IPRadar = false;
 
         public static Dictionary<EscapeState, bool> progression = new Dictionary<EscapeState, bool>();
 
         public enum Direction { Forward, Backward, Left, Right, Sonar };
-        public enum EscapeState { EscapeStarted, SubDescended, KeypadCodeEntered, }
+        public enum EscapeState { EscapeStarted, SubDescended, KeypadCodeEntered, FuzesScattered, SubControlsEnabled ,}
 
         public static bool CheckProgression(EscapeState escapeState)
         {
