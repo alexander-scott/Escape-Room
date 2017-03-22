@@ -28,6 +28,8 @@ namespace Assets.Prototype_Assets
             }
         }
 
+        // DO NOT CALL THIS IF YOU'RE ON THE SERVER.
+        // Instead call EscapeRoomController.Instance.UpdateSingleEscapeStateOnClients().
         public static void UpdateProgression(EscapeState escapeState, bool progressed)
         {
             progression[escapeState] = progressed;

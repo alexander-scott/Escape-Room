@@ -131,12 +131,10 @@ namespace Assets.Prototype_Assets
                     //descent has not stopped
                     HandleWhaleMovement();
 
-                    
                     //happens only once
                     if (isServer && !descentPacketSent)
                     {
                         descentPacketSent = true;
-                        GlobalVariables.UpdateProgression(GlobalVariables.EscapeState.SubDescended, true);
                         EscapeRoomController.Instance.UpdateSingleEscapeStateOnClients(GlobalVariables.EscapeState.SubDescended, true);
                     }
                 }
@@ -147,8 +145,6 @@ namespace Assets.Prototype_Assets
 
                     Vector3 groundPos = new Vector3(mSubmarine.transform.position.x, -25.0f, mSubmarine.transform.position.z);
                     mSubmarine.transform.position = Vector3.MoveTowards(mSubmarine.transform.position, groundPos, descendSpeed * Time.deltaTime);
-
-                    Debug.Log("Decending");
                 }
             }
 
@@ -274,7 +270,6 @@ namespace Assets.Prototype_Assets
             {
                 if (!GlobalVariables.CheckProgression(GlobalVariables.EscapeState.FuzesScattered))
                 {
-                    GlobalVariables.UpdateProgression(GlobalVariables.EscapeState.FuzesScattered, true);
                     EscapeRoomController.Instance.UpdateSingleEscapeStateOnClients(GlobalVariables.EscapeState.FuzesScattered, true);
                 }
                 

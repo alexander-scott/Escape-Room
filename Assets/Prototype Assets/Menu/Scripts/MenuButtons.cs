@@ -164,9 +164,9 @@ namespace Assets.Prototype_Assets
         private void AddPacketObservers()
         {
             NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.PlayerTryRegisterResult, PlayerTryRegisterResult);
-            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.UpdateAllEscapeStatesOnClients, UpdateAllEscapeStatesFromServer);
+            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.UpdateAllEscapeStatesOnClients, UpdateEscapeState);
             NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.CheckClientAlive, CheckClientAlive);
-            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.UpdateSingleEscapeStateOnClients, UpdateSingleEscapeStateFromServer);
+            NetworkLib.Client.ClientPacketObserver.AddObserver((int)PacketType.UpdateSingleEscapeStateOnClients, UpdateSingleEscapeState);
         }
 
         private void CheckClientAlive(Packet p)
@@ -205,7 +205,7 @@ namespace Assets.Prototype_Assets
             Client.SendPacket(p);
         }
 
-        private void UpdateAllEscapeStatesFromServer(Packet p)
+        private void UpdateEscapeState(Packet p)
         {
             int escapeStatesCount = Enum.GetNames(typeof(GlobalVariables.EscapeState)).Length;
 
@@ -215,7 +215,7 @@ namespace Assets.Prototype_Assets
             }
         }
 
-        private void UpdateSingleEscapeStateFromServer(Packet p)
+        private void UpdateSingleEscapeState(Packet p)
         {
             GlobalVariables.EscapeState escapeState = (GlobalVariables.EscapeState)Enum.Parse(typeof(GlobalVariables.EscapeState), p.generalData[0].ToString());
             bool progression = bool.Parse(p.generalData[1].ToString());
@@ -233,7 +233,7 @@ namespace Assets.Prototype_Assets
                 p.generalData.Add(((GlobalVariables.Direction)GlobalVariables.playerNumber));
                 Client.SendPacket(p);
 
-                NetworkLib.Client.stop();
+                //NetworkLib.Client.stop();
 
                 GlobalVariables.mobilePlayerRegistered = false;
             }

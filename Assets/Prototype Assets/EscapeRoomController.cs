@@ -28,6 +28,8 @@ namespace Assets.Prototype_Assets
 
         #endregion
 
+        public bool raspPiOnline = false;
+
         private bool player1Registered = false;
         private bool player2Registered = false;
         private bool player3Registered = false;
@@ -50,7 +52,6 @@ namespace Assets.Prototype_Assets
                 Server.ServerPacketObserver.AddObserver((int)PacketType.PlayerRegister, PlayerRegister);
                 Server.ServerPacketObserver.AddObserver((int)PacketType.PlayerUnRegister, PlayerUnRegister);
                 Server.ServerPacketObserver.AddObserver((int)PacketType.CheckEscapeState, CheckEscapeState);
-                Server.ServerPacketObserver.AddObserver((int)PacketType.ESCAPESTARTED, EscapeStarted);
                 Server.ServerPacketObserver.AddObserver((int)PacketType.UpdateSingleEscapeStateOnServer, UpdateSingleEscapeStateOnServer);
 
                 // THIS IS A SHIT WAY TO DO THIS - GET A REFERENCE
@@ -61,7 +62,6 @@ namespace Assets.Prototype_Assets
                 Server.ServerPacketObserver.AddObserver((int)PacketType.SHAKE, EnableShake);
 
                 StartCoroutine(CheckClientsAlive());
-               
             }
         }
 
@@ -91,8 +91,14 @@ namespace Assets.Prototype_Assets
         #region Escape state sync
 
         // Allows you to update a single escape state on the server and clients
+        // CALLED BY ANYWHERE ON THE SERVER.
         public void UpdateSingleEscapeStateOnClients(GlobalVariables.EscapeState escapeState, bool progression)
         {
+            if (!GlobalVariables.CheckProgression(escapeState))
+            {
+                TriggerEscapeStateFirstTimeEvent(escapeState);
+            }
+
             GlobalVariables.UpdateProgression(escapeState, progression);
 
             Packet pack = new Packet((int)PacketType.UpdateSingleEscapeStateOnClients, PacketType.UpdateSingleEscapeStateOnClients.ToString());
@@ -105,8 +111,31 @@ namespace Assets.Prototype_Assets
             }
         }
 
-        // Sends a message to all clients telling them what the new escape state is. Call this if you need to update the game state. Leave clientCalled false.
-        // PacketType = UpdateEscapeState
+        // Allows clients to update escape states on the server and all other clients.
+        // PacketType = UpdateSingleEscapeStateOnServer. CALLED BY ANY CLIENT.
+        private void UpdateSingleEscapeStateOnServer(Packet p)
+        {
+            GlobalVariables.EscapeState escapeState = (GlobalVariables.EscapeState)Enum.Parse(typeof(GlobalVariables.EscapeState), p.generalData[0].ToString());
+            bool progression = bool.Parse(p.generalData[1].ToString());
+
+            if (!GlobalVariables.CheckProgression(escapeState))
+            {
+                TriggerEscapeStateFirstTimeEvent(escapeState);
+            }
+
+            GlobalVariables.UpdateProgression(escapeState, progression);
+
+            UpdateEscapeStateOnClients();
+        }
+
+        // This is called when a client asks the server what the current escape state is. It returns the current escape state to all clients.
+        // PacketType = EscapeStartRequest. CALLED BY ANY CLIENT.
+        private void CheckEscapeState(Packet p)
+        {
+            UpdateEscapeStateOnClients();
+        }
+
+        // Sends a message to all clients telling them what the new escape state is. 
         private void UpdateEscapeStateOnClients()
         {
             Packet pack = new Packet((int)PacketType.UpdateAllEscapeStatesOnClients, PacketType.UpdateAllEscapeStatesOnClients.ToString());
@@ -122,53 +151,36 @@ namespace Assets.Prototype_Assets
             }
         }
 
-        // This is called when a client asks the server what the current escape state is. It returns the current escape state to all clients.
-        // PacketType = EscapeStartRequest
-        private void CheckEscapeState(Packet p)
+        // This function contains logic for what happens after a escape state gets triggered for the first time
+        private void TriggerEscapeStateFirstTimeEvent(GlobalVariables.EscapeState escapeState)
         {
-            UpdateEscapeStateOnClients();
-        }
+            Debug.Log(escapeState.ToString() + " triggered");
 
-        // This is called when the start button is pressed on the iPad
-        // PacketType = ESCAPESTARTED
-        private void EscapeStarted(Packet p)
-        {
-            GlobalVariables.UpdateProgression(GlobalVariables.EscapeState.EscapeStarted, true);
-
-            UpdateEscapeStateOnClients();
-        }
-
-        // Allows clients to update escape states on the server and all other clients.
-        // PacketType = UpdateSingleEscapeStateOnServer
-        private void UpdateSingleEscapeStateOnServer(Packet p)
-        {
-            GlobalVariables.EscapeState escapeState = (GlobalVariables.EscapeState)Enum.Parse(typeof(GlobalVariables.EscapeState), p.generalData[0].ToString());
-            bool progression = bool.Parse(p.generalData[1].ToString());
-
-            GlobalVariables.UpdateProgression(escapeState, progression);
-
-            UpdateEscapeStateOnClients();
-
-            switch(escapeState)
+            switch (escapeState)
             {
                 case GlobalVariables.EscapeState.EscapeStarted:
-                    rpi.Do(CMD.PLAY_COMPUTER_GREETING);
+                    if (raspPiOnline)
+                        rpi.Do(CMD.PLAY_COMPUTER_GREETING);
                     break;
 
                 case GlobalVariables.EscapeState.SubControlsEnabled:
-                    rpi.Do(CMD.PLAY_S_CONTROL_BUTTON);
+                    if (raspPiOnline)
+                        rpi.Do(CMD.PLAY_S_CONTROL_BUTTON);
                     break;
 
                 case GlobalVariables.EscapeState.FuzesScattered:
-                    rpi.Do(CMD.PLAY_FUSES_DISLODGED);
+                    if (raspPiOnline)
+                        rpi.Do(CMD.PLAY_FUSES_DISLODGED);
                     break;
 
                 case GlobalVariables.EscapeState.SubDescended:
-                    rpi.Do(CMD.PLAY_OXYGEN_LVL_DECREASE);
+                    if (raspPiOnline)
+                        rpi.Do(CMD.PLAY_OXYGEN_LVL_DECREASE);
                     break;
 
                 case GlobalVariables.EscapeState.KeypadCodeEntered:
-                    rpi.Do(CMD.PLAY_DIAGNOSTICS_ONLINE);
+                    if (raspPiOnline)
+                        rpi.Do(CMD.PLAY_DIAGNOSTICS_ONLINE);
                     break;
             }
         }
