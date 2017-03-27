@@ -58,7 +58,7 @@ namespace Assets.Prototype_Assets
         {
             shaking = false;
             shakeDecay = 0.02f;
-            shakeIntensity = 0.2f;
+            shakeIntensity = 0.4f;
             minWhaleSpeed = 1.0f;
             whaleSpeed = minWhaleSpeed;
             maxWhaleSpeed = 10.0f;
@@ -272,29 +272,33 @@ namespace Assets.Prototype_Assets
                 {
                     EscapeRoomController.Instance.UpdateSingleEscapeStateOnClients(GlobalVariables.EscapeState.FuzesScattered, true);
                 }
-                
-                SendCameraShakePacket();
 
+                if (!whaleIsLeaving)
+                {
+                    SendCameraShakePacket();
+                }
                 whaleIsLeaving = true;
                 whaleIsApproaching = false;
-                whaleSpeed = minWhaleSpeed;
+                //whaleSpeed = minWhaleSpeed;
             }
 
             if (whaleIsLeaving)
             {
                 SendWhaleAway();
             }
+          
         }
 
         private void SendCameraShakePacket()
         {
-            //@TODO Change this to only happen once.
-            Packet p = new Packet((int)PacketType.SHAKE, "Server");
+            shaking = true;
 
-            for (int i = 0; i < Server.udpClients.Count; i++)
-            {
-                Server.udpClients[i].SendPacket(p);
-            }
+            //Packet p = new Packet((int)PacketType.SHAKE, "Server");
+
+            //for (int i = 0; i < Server.udpClients.Count; i++)
+            //{
+            //    Server.udpClients[i].SendPacket(p);
+            //}
         }
 
         private void SendWhaleAway()
@@ -317,7 +321,7 @@ namespace Assets.Prototype_Assets
                 else
                 {
                     shaking = false;
-                    shakeIntensity = 0.2f;
+                    shakeIntensity = 0.4f;
                 }
             }
         }

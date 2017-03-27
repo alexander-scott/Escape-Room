@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.1273174, g: 0.13414761, b: 0.12107885, a: 1}
+  m_IndirectSpecularColor: {r: 0.12731749, g: 0.13414757, b: 0.1210787, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -102,7 +102,6 @@ GameObject:
   - component: {fileID: 135056047}
   - component: {fileID: 135056046}
   - component: {fileID: 135056045}
-  - component: {fileID: 135056048}
   m_Layer: 5
   m_Name: Mini-subButton
   m_TagString: Untagged
@@ -167,18 +166,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 135056046}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 102900000, guid: ccb0cb1f4f84b0044ab09f19e4810f15, type: 3}
-        m_MethodName: 
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
+      m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &135056046
@@ -214,17 +202,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 135056043}
---- !u!114 &135056048
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 135056043}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 70e62fae0be319340819550f13bc8b43, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &216189883
 GameObject:
   m_ObjectHideFlags: 0
@@ -2131,6 +2108,7 @@ MonoBehaviour:
   subButton: {fileID: 353185192}
   controlsButton: {fileID: 2129475263}
   qrScannerButton: {fileID: 1209444834}
+  miniSubButton: {fileID: 135056045}
   connectButton: {fileID: 1054341406}
   ipAddressText: {fileID: 2136431257}
   dropDownList: {fileID: 1840894007}

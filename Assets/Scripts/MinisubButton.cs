@@ -18,8 +18,8 @@ public class MinisubButton : MonoBehaviour {
 
     }
 
-    void OnMouseUp()
+    public void OnMouseUp()
     {
-        SceneManager.LoadScene("CodeLevel");
+        //SceneManager.LoadScene("CodeLevel");
     }
 }

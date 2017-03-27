@@ -12,6 +12,7 @@ namespace Assets.Prototype_Assets
         public Button subButton;
         public Button controlsButton;
         public Button qrScannerButton;
+        public Button miniSubButton;
 
         public Button connectButton;
 
@@ -33,6 +34,7 @@ namespace Assets.Prototype_Assets
             subButton.onClick.AddListener(SubButtonClicked);
             controlsButton.onClick.AddListener(ControlsButtonClicked);
             qrScannerButton.onClick.AddListener(QRButtonClicked);
+            miniSubButton.onClick.AddListener(MiniSubButtonClicked);
 
             connectButton.onClick.AddListener(ConnectButtonClicked);
 
@@ -270,6 +272,11 @@ namespace Assets.Prototype_Assets
         private void QRButtonClicked()
         {
             SceneManager.LoadScene("QRScanner");
+        }
+
+        private void MiniSubButtonClicked()
+        {
+            SceneManager.LoadScene("VRTest");
         }
 
         public void IPAddressChanged(string ipaddress)
