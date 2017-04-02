@@ -7,22 +7,25 @@ public class RadarSubV2 : MonoBehaviour
 
     // Blip information
     public bool radarBlip1Active;
-    public Color radarBlip1Color = new Color(0, 0, 255);
+    //public Color radarBlip1Color = new Color(0, 0, 255);
     public string radarBlip1Tag;
 
     public bool radarBlip2Active;
-    public Color radarBlip2Color = new Color(0, 255, 0);
+    //public Color radarBlip2Color = new Color(0, 255, 0);
     public string radarBlip2Tag;
 
     public bool radarBlip3Active;
-    public Color radarBlip3Color = new Color(255, 0, 0);
+    //public Color radarBlip3Color = new Color(255, 0, 0);
     public string radarBlip3Tag;
 
     public bool radarBlip4Active;
-    public Color radarBlip4Color = new Color(255, 0, 255);
+    //public Color radarBlip4Color = new Color(255, 0, 255);
     public string radarBlip4Tag;
 
     public GameObject radarPrefab;
+    public GameObject radarPrefab2;
+    public GameObject radarPrefab3;
+    public GameObject radarPrefab4;
     public float switchDistance;
 
     public AudioClip radarPing;
@@ -54,7 +57,7 @@ public class RadarSubV2 : MonoBehaviour
             // Iterate through them and call drawBlip function
             foreach (GameObject go in trackedObjects)
             {
-                updateRadarObjects(go);
+                updateRadarObjects(go, radarPrefab);
             }
         }
         if (radarBlip2Active)
@@ -63,7 +66,7 @@ public class RadarSubV2 : MonoBehaviour
 
             foreach (GameObject go in trackedObjects)
             {
-                updateRadarObjects(go);
+                updateRadarObjects(go, radarPrefab2);
             }
         }
         if (radarBlip3Active)
@@ -72,7 +75,7 @@ public class RadarSubV2 : MonoBehaviour
 
             foreach (GameObject go in trackedObjects)
             {
-                updateRadarObjects(go);
+                updateRadarObjects(go, radarPrefab3);
             }
         }
         if (radarBlip4Active)
@@ -81,7 +84,7 @@ public class RadarSubV2 : MonoBehaviour
 
             foreach (GameObject go in trackedObjects)
             {
-                updateRadarObjects(go);
+                updateRadarObjects(go, radarPrefab4);
             }
         }
     }
@@ -95,11 +98,11 @@ public class RadarSubV2 : MonoBehaviour
         drawBlips(k, j);
     }
 
-    void updateRadarObjects(GameObject go)
+    void updateRadarObjects(GameObject go, GameObject prefab)
     {
         clearBlips(go);
-        GameObject k = Instantiate(radarPrefab, go.transform.position, Quaternion.identity) as GameObject;
-        GameObject j = Instantiate(radarPrefab, go.transform.position, Quaternion.identity) as GameObject;
+        GameObject k = Instantiate(prefab, go.transform.position, Quaternion.identity) as GameObject;
+        GameObject j = Instantiate(prefab, go.transform.position, Quaternion.identity) as GameObject;
         k.transform.SetParent(go.transform);
         j.transform.SetParent(go.transform);
         drawBlips(k, j);
@@ -110,7 +113,7 @@ public class RadarSubV2 : MonoBehaviour
         if (Vector3.Distance(k.transform.position, transform.position) > switchDistance)
         {
             helpTransform.LookAt(k.transform);
-            //j.transform.position = transform.position + switchDistance * helpTransform.forward;
+            j.transform.position = transform.position + switchDistance * helpTransform.forward;
             j.layer = LayerMask.NameToLayer("Radar");
             k.layer = LayerMask.NameToLayer("Invisible");
         }

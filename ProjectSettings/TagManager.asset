@@ -11,6 +11,10 @@ TagManager:
   - Preview Camera
   - reflectioncamera
   - IPRadarCamera
+  - projectile
+  - FxTemporaire
+  - TestJoystick
+  - Fuse
   layers:
   - Default
   - TransparentFX

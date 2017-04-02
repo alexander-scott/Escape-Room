@@ -3,6 +3,8 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using System;
+using System.Collections.Generic;
+using System.Net;
 
 namespace Assets.Prototype_Assets
 {
@@ -34,9 +36,12 @@ namespace Assets.Prototype_Assets
         private bool player2Registered = false;
         private bool player3Registered = false;
         private bool player4Registered = false;
+
         private RPI.Metalberry rpi;
+        private Dictionary<int, string> commands;
 
         private PlayerController playerController;
+
 
         public override void OnStartServer()
         {
@@ -78,11 +83,11 @@ namespace Assets.Prototype_Assets
         // Ensure we stop the server when the application ends
         private void OnApplicationQuit()
         {
-            if (isServer)
+            if (isServer && isClient)
             {
                 NetworkLib.Server.stop();
             }
-            else
+            else if (!isServer && isClient)
             {
                 NetworkLib.Client.stop();
             }
@@ -160,27 +165,32 @@ namespace Assets.Prototype_Assets
             {
                 case GlobalVariables.EscapeState.EscapeStarted:
                     if (raspPiOnline)
-                        rpi.Do(CMD.PLAY_COMPUTER_GREETING);
+                        rpi.Do(RPI.CMD.PLAY_COMPUTER_GREETING);
                     break;
 
                 case GlobalVariables.EscapeState.SubControlsEnabled:
                     if (raspPiOnline)
-                        rpi.Do(CMD.PLAY_S_CONTROL_BUTTON);
+                        rpi.Do(RPI.CMD.PLAY_SUB_CONTROL_TUT);
                     break;
 
                 case GlobalVariables.EscapeState.FuzesScattered:
                     if (raspPiOnline)
-                        rpi.Do(CMD.PLAY_FUSES_DISLODGED);
+                        rpi.Do(RPI.CMD.PLAY_FUSES_DISLODGED);
                     break;
 
                 case GlobalVariables.EscapeState.SubDescended:
                     if (raspPiOnline)
-                        rpi.Do(CMD.PLAY_OXYGEN_LVL_DECREASE);
+                        rpi.Do(RPI.CMD.PLAY_OXYGEN_LVL_DECREASE);
                     break;
 
                 case GlobalVariables.EscapeState.KeypadCodeEntered:
                     if (raspPiOnline)
-                        rpi.Do(CMD.PLAY_DIAGNOSTICS_ONLINE);
+                        rpi.Do(RPI.CMD.PLAY_DIAGNOSTICS_ONLINE);
+                    break;
+
+                case GlobalVariables.EscapeState.SubStartDescending:
+                    if (raspPiOnline)
+                        rpi.Do(RPI.CMD.PLAY_SUB_START_DESCEND);
                     break;
             }
         }

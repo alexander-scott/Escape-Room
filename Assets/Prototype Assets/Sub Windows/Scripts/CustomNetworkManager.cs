@@ -12,17 +12,24 @@ namespace Assets.Prototype_Assets
 
         public Button startSessionBtn;
         public Button joinSessionBtn;
+        public Button switchkeypad;
         public Canvas canvas;
+
         //public Button subControls;
 
         private void Start()
         {
             startSessionBtn.onClick.AddListener(StartSessionBtnClicked);
             joinSessionBtn.onClick.AddListener(JoinSessionBtnClicked);
-            
-            if (GlobalVariables.IPRadar == true)
+
+            if (GlobalVariables.IPRadar == true && GlobalVariables.IPRadarSwitch == false) 
             {
+                GlobalVariables.IPRadarSwitch = true;
                 JoinSessionBtnClicked();
+            }
+            else if (GlobalVariables.IPRadar == true && GlobalVariables.IPRadarSwitch == true)
+            {
+                canvas.enabled = false;
             }
         }
 

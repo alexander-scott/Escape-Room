@@ -10,11 +10,16 @@ namespace Assets.Prototype_Assets
         public static int playerNumber = 0;
         public static bool mobilePlayerRegistered = false;
         public static bool IPRadar = false;
+        public static bool IPRadarSwitch = false;
+
+        public static string raspPiIp = "192.168.42.1";
+        public static string raspPiPort = "5000";
 
         public static Dictionary<EscapeState, bool> progression = new Dictionary<EscapeState, bool>();
 
         public enum Direction { Forward, Backward, Left, Right, Sonar };
-        public enum EscapeState { EscapeStarted, SubDescended, KeypadCodeEntered, FuzesScattered, SubControlsEnabled ,}
+        public enum EscapeState { EscapeStarted, SubStartDescending, SubDescended, KeypadCodeEntered, FuzesScattered, SubControlsEnabled ,}
+
 
         public static bool CheckProgression(EscapeState escapeState)
         {

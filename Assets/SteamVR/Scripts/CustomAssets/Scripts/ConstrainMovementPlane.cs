@@ -195,8 +195,8 @@ public class ConstrainMovementPlane : MonoBehaviour
 
         //Debug.Log("Transform " + neutralSensor.GetComponent<Transform>().position);
         //Debug.Log("TransformPoint " + transform.TransformPoint(neutralSensor.GetComponent<Transform>().position));
-        Debug.Log("front" + distFront);
-        Debug.Log("rear" + distRear);
+        //Debug.Log("front" + distFront);
+        //Debug.Log("rear" + distRear);
 
         if (distNeutral > joystickNullZone)
         {

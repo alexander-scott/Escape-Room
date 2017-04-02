@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 using NetworkLib;
 using System;
 using System.Collections;
+using UnityEngine.Networking;
 
 namespace Assets.Prototype_Assets
 {
@@ -13,6 +14,7 @@ namespace Assets.Prototype_Assets
         public Button controlsButton;
         public Button qrScannerButton;
         public Button miniSubButton;
+        public Button startSceneButton;
 
         public Button connectButton;
 
@@ -35,6 +37,7 @@ namespace Assets.Prototype_Assets
             controlsButton.onClick.AddListener(ControlsButtonClicked);
             qrScannerButton.onClick.AddListener(QRButtonClicked);
             miniSubButton.onClick.AddListener(MiniSubButtonClicked);
+            startSceneButton.onClick.AddListener(StartSceneButtonClicked);
 
             connectButton.onClick.AddListener(ConnectButtonClicked);
 
@@ -48,6 +51,7 @@ namespace Assets.Prototype_Assets
             {
                 connectButtonText.text = "Disconnect";
                 controlsButton.gameObject.GetComponent<Image>().color = Color.green;
+                qrScannerButton.gameObject.GetComponent<Image>().color = Color.green;
                 dropDownList.enabled = false;
                 clientCreated = true;
                 AddPacketObservers();
@@ -56,6 +60,7 @@ namespace Assets.Prototype_Assets
             {
                 connectButtonText.text = "Connect";
                 controlsButton.gameObject.GetComponent<Image>().color = Color.gray;
+                qrScannerButton.gameObject.GetComponent<Image>().color = Color.gray;
                 dropDownList.enabled = true;
             }
         }
@@ -72,6 +77,7 @@ namespace Assets.Prototype_Assets
                 {
                     connectButtonText.text = "Disconnect";
                     controlsButton.gameObject.GetComponent<Image>().color = Color.green;
+                    qrScannerButton.gameObject.GetComponent<Image>().color = Color.green;
                     dropDownList.enabled = false;
                     infoText.text = "Successfully connected!";
                 }
@@ -79,6 +85,7 @@ namespace Assets.Prototype_Assets
                 {
                     connectButtonText.text = "Connect";
                     controlsButton.gameObject.GetComponent<Image>().color = Color.gray;
+                    qrScannerButton.gameObject.GetComponent<Image>().color = Color.gray;
                     dropDownList.enabled = true;
                     infoText.text = "Someone else has taken this player!";
                 }
@@ -102,6 +109,7 @@ namespace Assets.Prototype_Assets
                     connectButtonText.text = "Connect";
                     dropDownList.enabled = true;
                     controlsButton.gameObject.GetComponent<Image>().color = Color.gray;
+                    qrScannerButton.gameObject.GetComponent<Image>().color = Color.gray;
 
                     connectionTimer = 0f; 
                 }
@@ -160,6 +168,7 @@ namespace Assets.Prototype_Assets
                 connectButtonText.text = "Connect";
                 dropDownList.enabled = true;
                 controlsButton.gameObject.GetComponent<Image>().color = Color.gray;
+                qrScannerButton.gameObject.GetComponent<Image>().color = Color.gray;
             }
         }
 
@@ -271,12 +280,43 @@ namespace Assets.Prototype_Assets
 
         private void QRButtonClicked()
         {
-            SceneManager.LoadScene("QRScanner");
+            if (GlobalVariables.mobilePlayerRegistered && GlobalVariables.CheckProgression(GlobalVariables.EscapeState.EscapeStarted))
+            {
+                SceneManager.LoadScene("QRScanner");
+            }
+            else if (GlobalVariables.mobilePlayerRegistered && !GlobalVariables.CheckProgression(GlobalVariables.EscapeState.EscapeStarted))
+            {
+                infoText.text = "Please start the game first!";
+            }
+            else
+            {
+                infoText.text = "Please connect first!";
+            }
         }
 
         private void MiniSubButtonClicked()
         {
+            if (GlobalVariables.mobilePlayerRegistered)
+            {
+                Packet p = new Packet((int)PacketType.PlayerUnRegister, ((GlobalVariables.Direction)GlobalVariables.playerNumber).ToString());
+                p.generalData.Add(((GlobalVariables.Direction)GlobalVariables.playerNumber));
+                Client.SendPacket(p);
+
+                //NetworkLib.Client.stop();
+
+                GlobalVariables.mobilePlayerRegistered = false;
+
+                NetworkManager.singleton.networkAddress = GlobalVariables.ipAddress;
+                NetworkManager.singleton.networkPort = 7777;
+                NetworkManager.singleton.StartClient();
+            }
+
             SceneManager.LoadScene("VRTest");
+        }
+
+        private void StartSceneButtonClicked()
+        {
+            SceneManager.LoadScene("StartScene");
         }
 
         public void IPAddressChanged(string ipaddress)

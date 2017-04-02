@@ -79,7 +79,7 @@ public class RemoteControlFromJoystick : MonoBehaviour
         directionToGoInt = (int)theJoystickObject.GetComponent<ConstrainMovementPlane>().directionToGo;
         directionToGo = (Direction)directionToGoInt;
 
-        Debug.Log("DirectionToGo " + directionToGo);
+        //Debug.Log("DirectionToGo " + directionToGo);
         if (directionToGo == Direction.forwards)
         {
             rb.velocity += (transform.forward * moveSpeed);

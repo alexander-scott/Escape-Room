@@ -39,12 +39,6 @@ namespace Assets.Prototype_Assets
             }
         }
 
-		void OnApplicationQuit()
-		{
-			//NetworkLib.Client.stop();
-		}
-
-
 		public void StartMoving()
         {
             moving = true;

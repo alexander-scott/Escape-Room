@@ -43,6 +43,7 @@ namespace Assets.Prototype_Assets
         public float underwaterLevel = 6.4f;
 
         private float groundLevel = -22.0f;
+        private float descendWaitTimer = 5f;
 
         //default fog settings from scene
         private bool defaultFog;
@@ -139,12 +140,21 @@ namespace Assets.Prototype_Assets
                     }
                 }
 
-                if (mSubmarine.transform.position.y > groundLevel)
+                if (mSubmarine.transform.position.y > groundLevel && descendWaitTimer < 0.1f)
                 {
                     //this.transform.position = new Vector3(this.transform.position.x, this.transform.position.y - 0.01f, this.transform.position.z);
 
+                    if (!GlobalVariables.CheckProgression(GlobalVariables.EscapeState.SubStartDescending))
+                    {
+                        EscapeRoomController.Instance.UpdateSingleEscapeStateOnClients(GlobalVariables.EscapeState.SubStartDescending, true);
+                    }
+
                     Vector3 groundPos = new Vector3(mSubmarine.transform.position.x, -25.0f, mSubmarine.transform.position.z);
                     mSubmarine.transform.position = Vector3.MoveTowards(mSubmarine.transform.position, groundPos, descendSpeed * Time.deltaTime);
+                }
+                else
+                {
+                    descendWaitTimer -= Time.deltaTime;
                 }
             }
 
@@ -156,35 +166,35 @@ namespace Assets.Prototype_Assets
 
             switch (GlobalVariables.playerNumber)
             {
-                //North facing camera
                 case 0:
+                    //North facing camera (NE)
                     IPRadarcam.SetActive(false);
                     Radarcam.SetActive(false);
-                    Quaternion northRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 180.0f, mSubmarine.transform.rotation.z);
-                    Vector3 northPos = new Vector3(mSubmarine.transform.position.x + kWindowOffset, mSubmarine.transform.position.y, mSubmarine.transform.position.z);
+                    Quaternion northRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 270.0f, mSubmarine.transform.rotation.z);
+                    Vector3 northPos = new Vector3(mSubmarine.transform.position.x + (2 * kWindowOffset), mSubmarine.transform.position.y, mSubmarine.transform.position.z);
                     this.transform.position = northPos;
                     this.transform.rotation = northRot;
                     ShakeAtInterval();
                     debugText = "Camera North";
                     GlobalVariables.IPRadar = false;
                     break;
-                //East facing camera
                 case 1:
+                    //East facing camera (SE)
                     IPRadarcam.SetActive(false);
                     Radarcam.SetActive(false);
                     Quaternion eastRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y - 90.0f, mSubmarine.transform.rotation.z);
-                    Vector3 eastPos = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z - kWindowOffset);
+                    Vector3 eastPos = new Vector3(mSubmarine.transform.position.x - kWindowOffset, mSubmarine.transform.position.y, mSubmarine.transform.position.z - kWindowOffset);
                     this.transform.rotation = eastRot;
                     this.transform.position = eastPos;
                     ShakeAtInterval();
                     debugText = "Camera East";
                     GlobalVariables.IPRadar = false;
                     break;
-                //South facing camera
                 case 2:
+                    //South facing camera (SW)
                     IPRadarcam.SetActive(false);
                     Radarcam.SetActive(false);
-                    Quaternion southRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y, mSubmarine.transform.rotation.z);
+                    Quaternion southRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 90, mSubmarine.transform.rotation.z);
                     Vector3 southPos = new Vector3(mSubmarine.transform.position.x - (2 * kWindowOffset), mSubmarine.transform.position.y, mSubmarine.transform.position.z);
                     this.transform.position = southPos;
                     this.transform.rotation = southRot;
@@ -192,12 +202,12 @@ namespace Assets.Prototype_Assets
                     debugText = "Camera South";
                     GlobalVariables.IPRadar = false;
                     break;
-                //West facing camera
                 case 3:
+                    //West facing camera (NW)
                     IPRadarcam.SetActive(false);
                     Radarcam.SetActive(false);
                     Quaternion westRot = Quaternion.Euler(mSubmarine.transform.rotation.x, mSubmarine.transform.rotation.y + 90.0f, mSubmarine.transform.rotation.z);
-                    Vector3 westPos = new Vector3(mSubmarine.transform.position.x, mSubmarine.transform.position.y, mSubmarine.transform.position.z + kWindowOffset);
+                    Vector3 westPos = new Vector3(mSubmarine.transform.position.x + (2 * kWindowOffset), mSubmarine.transform.position.y, mSubmarine.transform.position.z + kWindowOffset);
                     this.transform.position = westPos;
                     this.transform.rotation = westRot;
                     ShakeAtInterval();
@@ -218,19 +228,19 @@ namespace Assets.Prototype_Assets
                     IPRadarcam.SetActive(true);
                     this.cam.gameObject.SetActive(false);
                     Radarcam.SetActive(false);
-                    GlobalVariables.IPRadar = false;
                     break;
             }
             //SwitchCamera();
         }
 
-        public void OnApplicationQuit()
-        {
-            if (!isServer)
-            {
-                Client.stop();
-            }
-        }
+        //public void OnApplicationQuit()
+        //{
+        //    if (!isServer)
+        //    {
+        //        Client.stop();
+        //        NetworkManager.singleton.StopClient();
+        //    }
+        //}
 
         private void CameraShake()
         {
@@ -266,7 +276,7 @@ namespace Assets.Prototype_Assets
 
                 mWhale.transform.position = Vector3.MoveTowards(mWhale.transform.position, tar, whaleSpeed * Time.deltaTime);
             }
-            if (mWhale.transform.position == tar)
+            if (mWhale != null && mWhale.transform.position == tar)
             {
                 if (!GlobalVariables.CheckProgression(GlobalVariables.EscapeState.FuzesScattered))
                 {
@@ -282,7 +292,7 @@ namespace Assets.Prototype_Assets
                 //whaleSpeed = minWhaleSpeed;
             }
 
-            if (whaleIsLeaving)
+            if (mWhale != null && whaleIsLeaving)
             {
                 SendWhaleAway();
             }

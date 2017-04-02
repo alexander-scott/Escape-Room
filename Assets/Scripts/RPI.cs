@@ -3,29 +3,33 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public enum CMD
-{
-    PLAY_S_CONTROL_BUTTON,
-    PLAY_ACCES_CHAMBER_PASS,
-    PLAY_FUSES_COLLECTED,
-    PLAY_OXYGEN_LVL_DECREASE,
-    PLAY_SYSTEM_MALFUNC,
-    PLAY_COMPUTER_GREETING,
-    PLAY_FUSES_DISLODGED,
-    PLAY_DIAGNOSTICS_ONLINE,
-    DO_OPEN_BOX,
-    DO_LED_ON,
-    DO_LED_OFF
-};
+
 
 public class RPI : MonoBehaviour {
-    
+
+    public enum CMD
+    {
+        PLAY_SUB_CONTROL_TUT,
+        PLAY_ACCES_CHAMBER_PASS,
+        PLAY_FUSES_COLLECTED,
+        PLAY_OXYGEN_LVL_DECREASE,
+        PLAY_SYSTEM_MALFUNC,
+        PLAY_COMPUTER_GREETING,
+        PLAY_FUSES_DISLODGED,
+        PLAY_DIAGNOSTICS_ONLINE,
+        PLAY_SUB_START_DESCEND,
+        DO_OPEN_BOX,
+        DO_LED_ON,
+        DO_LED_OFF
+    };
+
     public class Metalberry
     {
         private Dictionary<int, string> commands;
 
-        string ip = "192.168.42.1";
+        string ip = "169.254.15.108";
         string port = "5000";
 
         public Metalberry()
@@ -33,14 +37,15 @@ public class RPI : MonoBehaviour {
             commands = new Dictionary<int, string>();
 
             // Sounds
-            commands.Add((int)CMD.PLAY_S_CONTROL_BUTTON, "S_Control_button");
+            commands.Add((int)CMD.PLAY_SUB_CONTROL_TUT, "Submarine_Controls_tut");
             commands.Add((int)CMD.PLAY_ACCES_CHAMBER_PASS, "Access_Chamber_pass");
             commands.Add((int)CMD.PLAY_FUSES_COLLECTED, "Fuses_collected");
-            commands.Add((int)CMD.PLAY_OXYGEN_LVL_DECREASE, "Oxygen_Level_decreasing");
+            commands.Add((int)CMD.PLAY_OXYGEN_LVL_DECREASE, "Oxygen_decrease");
             commands.Add((int)CMD.PLAY_SYSTEM_MALFUNC, "System_malfunction");
             commands.Add((int)CMD.PLAY_COMPUTER_GREETING, "Computer_greeting");
             commands.Add((int)CMD.PLAY_FUSES_DISLODGED, "Fuses_dislodged");
             commands.Add((int)CMD.PLAY_DIAGNOSTICS_ONLINE, "Diagnostics_online");
+            commands.Add((int)CMD.PLAY_SUB_START_DESCEND, "Submarine_descend");
 
             commands.Add((int)CMD.DO_OPEN_BOX, "Open_Box");
 
@@ -53,17 +58,25 @@ public class RPI : MonoBehaviour {
             string request = "http://" + ip + ":" + port + "/" + cmd;
             return request;
         }
-        public string Do(CMD command)
+        public void Do(CMD command)
         {
             string requestString = ConstructRequest((int)command);
+
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(requestString);
             Debug.Log("request " + requestString);
-
-
+            
             WebResponse response = request.GetResponse();
-            StreamReader sr = new StreamReader(response.GetResponseStream());
+            response.Close();
 
-            return sr.ReadToEnd();
+            //StreamReader sr = new StreamReader(response.GetResponseStream());
+        }
+
+        private IEnumerator SendResponse(string requestString)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(requestString);
+            WebResponse response = request.GetResponse();
+
+            yield return null;
         }
     }
 
